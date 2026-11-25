@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /wallet
+Disallow: /orders
+Disallow: /messages
+Disallow: /offers
+Disallow: /profile
+Disallow: /support-agent
+Sitemap: https://elawamy-8d7e9.web.app/sitemap.xml

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الدعم الفني | ElaWamy</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">ElaWamy</a>
+  <nav>
+    <a href="/">الخدمات</a>
+    <a href="/add-service">أضف خدمة</a>
+    <a href="/seller-dashboard">لوحة البائع</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/profile">حسابي</a>
+      <a href="/support">الدعم الفني</a>
+  </nav>
+</header>
+
+<main>
+  <div class="box wide">
+    <h1>الدعم الفني</h1>
+    <p class="muted">لو عندك مشكلة أو استفسار، افتح تذكرة وسنساعدك.</p>
+
+    <form id="supportForm">
+      <label>نوع المشكلة</label>
+      <select id="category" required>
+        <option value="">اختر نوع المشكلة</option>
+        <option value="account">الحساب</option>
+        <option value="order">طلب أو خدمة</option>
+        <option value="payment">الدفع</option>
+        <option value="technical">مشكلة تقنية</option>
+        <option value="other">أخرى</option>
+      </select>
+
+      <label>عنوان المشكلة</label>
+      <input id="subject" type="text" maxlength="120" required>
+
+      <label>شرح المشكلة</label>
+      <textarea id="message" rows="7" maxlength="2000" required></textarea>
+
+      <button class="btn" type="submit">إرسال التذكرة</button>
+      <p id="formStatus" class="muted"></p>
+    </form>
+
+    <hr>
+
+    <h2>تذاكري</h2>
+    <div id="tickets">
+      <p class="muted">جاري تحميل التذاكر...</p>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="/js/support.js?v=1"></script>
+<script type="module" src="/js/notifications.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script></body>
+</html>

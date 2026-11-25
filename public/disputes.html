@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>النزاعات والشكاوى | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+  <a class="logo" href="/">ElaWamy</a>
+  <nav>
+    <a href="/">الخدمات</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/buyer-dashboard">لوحة المشتري</a>
+    <a href="/seller-dashboard">لوحة البائع</a>
+    <a href="/wallet">💰 أرباحي</a>
+    <a href="/support">الدعم الفني</a>
+    <a href="/profile">حسابي</a>
+  </nav>
+</header>
+<main>
+  <section class="box wide" id="disputesPage">
+    <div class="dashboard-header">
+      <div>
+        <span class="muted">حماية الطلبات</span>
+        <h1>النزاعات والشكاوى</h1>
+        <p class="muted">افتح نزاعًا عند وجود مشكلة في طلب مدفوع، وتابع الرد والقرار من مكان واحد.</p>
+      </div>
+      <a class="btn secondary" href="/orders">العودة للطلبات</a>
+    </div>
+
+    <div id="newDisputeBox" class="dashboard-section" hidden>
+      <div class="dashboard-section-head"><h2>فتح نزاع جديد</h2></div>
+      <p id="disputeOrderSummary" class="muted"></p>
+      <form id="disputeForm" class="support-form">
+        <div class="form-grid">
+          <select id="disputeRole" required>
+            <option value="">أنت...</option>
+            <option value="buyer">المشتري</option>
+            <option value="seller">البائع</option>
+          </select>
+          <select id="disputeReason" required>
+            <option value="">سبب النزاع</option>
+            <option value="تأخر في التنفيذ">تأخر في التنفيذ</option>
+            <option value="جودة العمل">جودة العمل</option>
+            <option value="التسليم والملفات">التسليم والملفات</option>
+            <option value="الدفع والاسترداد">الدفع والاسترداد</option>
+            <option value="سوء التواصل">سوء التواصل</option>
+            <option value="أخرى">أخرى</option>
+          </select>
+        </div>
+        <textarea id="disputeDescription" maxlength="4000" required placeholder="اشرح المشكلة بالتفصيل... (10 أحرف على الأقل)"></textarea>
+        <textarea id="disputeEvidence" maxlength="4000" placeholder="روابط أو أرقام ملفات/أدلة مرتبطة بالطلب (اختياري)"></textarea>
+        <div class="form-grid">
+          <button class="btn" type="submit">فتح النزاع</button>
+          <button class="btn secondary" type="button" id="cancelNewDispute">إلغاء</button>
+        </div>
+        <p id="disputeFormMessage" class="muted"></p>
+      </form>
+    </div>
+
+    <section class="dashboard-section">
+      <div class="dashboard-section-head">
+        <h2>نزاعاتي</h2>
+        <button class="btn small" id="refreshDisputes" type="button">تحديث</button>
+      </div>
+      <div id="disputesList"><p class="muted">جاري التحميل...</p></div>
+    </section>
+  </section>
+</main>
+<script type="module" src="/js/disputes.js"></script>
+<script type="module" src="/js/notifications.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script></body>
+</html>

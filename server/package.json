@@ -1,0 +1,18 @@
+{
+  "name": "elawamy-file-server",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.4.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
+  }
+}

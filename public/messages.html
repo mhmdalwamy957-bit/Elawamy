@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="مراسلات ElaWamy قبل وأثناء الطلب">
+<title>الرسائل | ElaWamy</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header"><div class="header-inner">
+<a class="logo" href="/">ElaWamy</a>
+<nav id="mainNav">
+<a href="/">الرئيسية</a><a href="/category">التصنيفات</a><a href="/orders" data-auth hidden>الطلبات</a>
+<a href="/messages" data-auth hidden>💬 الرسائل</a><a href="/offers" data-auth hidden>🤝 العروض</a>
+<a href="/buyer-dashboard" data-auth hidden>لوحة المشتري</a><a href="/seller-dashboard" data-auth hidden>لوحة البائع</a>
+<a href="/wallet" data-auth hidden>💰 أرباحي</a><a href="/profile" data-auth hidden>حسابي</a>
+<a href="/support">الدعم الفني</a><a href="/login" data-guest>دخول / تسجيل</a>
+</nav></div></header>
+<main><section class="box wide">
+<div class="dashboard-header"><div><span class="muted">مركز التواصل</span><h1>الرسائل</h1><p class="muted">تواصل مع المشتري أو البائع قبل الشراء وأثناء التفاوض.</p></div><a class="btn" href="/offers">العروض المخصصة</a></div>
+<div class="messages-layout">
+<aside id="conversationList" class="card" style="padding:14px"><p class="muted">جاري تحميل المحادثات...</p></aside>
+<section class="card" style="padding:18px"><div id="conversationHeader"><p class="muted">اختر محادثة من القائمة.</p></div><div id="messageList" class="messages-list"></div><form id="messageForm" hidden><textarea id="messageText" maxlength="3000" placeholder="اكتب رسالتك..."></textarea><button class="btn" type="submit">إرسال</button><p id="messageStatus" class="muted"></p></form><form id="offerForm" hidden class="card" style="padding:14px;margin-top:14px"><h3>إرسال عرض مخصص</h3><input id="offerTitle" maxlength="160" placeholder="عنوان العرض"><textarea id="offerDescription" maxlength="2000" placeholder="تفاصيل ما ستنفذه"></textarea><input id="offerPrice" type="number" min="1" max="100000" placeholder="السعر بالجنيه"><input id="offerDelivery" type="number" min="1" max="90" placeholder="مدة التسليم بالأيام"><button class="btn" type="submit">إرسال العرض</button><p id="offerStatus" class="muted"></p></form></section>
+</div>
+</section></main>
+<script type="module" src="/js/messages.js"></script>
+<script type="module" src="/js/notifications.js"></script>
+<script type="module" src="/js/admin-nav.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script></body></html>

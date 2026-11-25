@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>لوحة تحكم الدعم الفني | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<header>
+  <a class="logo" href="/">ElaWamy</a>
+
+  <nav>
+    <a href="/">الخدمات</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/profile">حسابي</a>
+    <a href="/support">الدعم الفني</a>
+  </nav>
+</header>
+
+<main class="support-agent-page">
+
+  <section class="box wide">
+    <h1>لوحة تحكم الدعم الفني</h1>
+
+    <p class="muted" id="agentStatus">
+      جاري التحقق من صلاحيات الحساب...
+    </p>
+
+    <div id="agentPanel" hidden>
+
+      <div class="admin-tabs">
+        <button class="btn admin-tab active" data-section="dashboard">
+          📊 الرئيسية
+        </button>
+
+        <button class="btn admin-tab" data-section="users">
+          👥 المستخدمون
+        </button>
+
+        <button class="btn admin-tab" data-section="services">
+          🛍️ الخدمات
+        </button>
+
+        <button class="btn admin-tab" data-section="orders">
+          📦 الطلبات
+        </button>
+
+        <button class="btn admin-tab" data-section="reviews">
+          ⭐ التقييمات
+        </button>
+
+        <button class="btn admin-tab" data-section="tickets">
+          🎫 الدعم
+        </button>
+      </div>
+
+      <section id="admin-dashboard" class="admin-section">
+        <h2>نظرة عامة</h2>
+
+        <div class="grid admin-stats">
+
+          <div class="card">
+            <strong id="statUsers">0</strong>
+            <span>المستخدمون</span>
+          </div>
+
+          <div class="card">
+            <strong id="statServices">0</strong>
+            <span>الخدمات</span>
+          </div>
+
+          <div class="card">
+            <strong id="statOrders">0</strong>
+            <span>الطلبات</span>
+          </div>
+
+          <div class="card">
+            <strong id="statReviews">0</strong>
+            <span>التقييمات</span>
+          </div>
+
+          <div class="card">
+            <strong id="statTickets">0</strong>
+            <span>تذاكر الدعم</span>
+          </div>
+
+        </div>
+
+        <div class="card">
+          <h3>آخر الطلبات</h3>
+          <div id="recentOrders">
+            <p class="muted">جاري التحميل...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin-users" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>المستخدمون</h2>
+
+          <input
+            id="usersSearch"
+            type="search"
+            placeholder="بحث بالاسم أو البريد..."
+          >
+        </div>
+
+        <div id="usersList"></div>
+      </section>
+
+      <section id="admin-services" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>الخدمات</h2>
+
+          <input
+            id="servicesSearch"
+            type="search"
+            placeholder="بحث باسم الخدمة أو التصنيف..."
+          >
+        </div>
+
+        <div id="servicesList"></div>
+      </section>
+
+      <section id="admin-orders" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>الطلبات</h2>
+
+          <select id="ordersStatusFilter">
+            <option value="">كل الحالات</option>
+            <option value="pending">قيد الانتظار</option>
+            <option value="accepted">مقبول</option>
+            <option value="delivered">تم التسليم</option>
+            <option value="revision_requested">طلب تعديل</option>
+            <option value="redelivered">تم إعادة التسليم</option>
+            <option value="completed">مكتمل</option>
+          </select>
+
+          <input
+            id="ordersSearch"
+            type="search"
+            placeholder="بحث برقم الطلب أو البريد..."
+          >
+        </div>
+
+        <div id="ordersList"></div>
+      </section>
+
+      <section id="admin-reviews" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>التقييمات</h2>
+
+          <input
+            id="reviewsSearch"
+            type="search"
+            placeholder="بحث في التقييمات..."
+          >
+        </div>
+
+        <div id="reviewsList"></div>
+      </section>
+
+      <section id="admin-tickets" class="admin-section" hidden>
+        <h2>تذاكر الدعم الفني</h2>
+
+        <div id="agentTickets">
+          <p class="muted">جاري تحميل التذاكر...</p>
+        </div>
+      </section>
+
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="/js/support-agent.js?v=3"></script>
+
+<script type="module" src="/js/notifications.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script></body>
+</html>

@@ -1,0 +1,135 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const assert = require('node:assert/strict');
+
+const root = path.resolve(__dirname, '..');
+function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
+function checkSyntax(relative) {
+  const result = spawnSync(process.execPath, ['--check', path.join(root, relative)], { encoding: 'utf8' });
+  assert.equal(result.status, 0, `Syntax error in ${relative}:\n${result.stderr || result.stdout}`);
+}
+
+for (const file of ['server/server.js', 'server/xpay.js', 'server/barber-schedule-rules.js', 'public/js/barbers.js', 'public/js/barber-booking.js', 'public/js/barber-schedule.js', 'public/js/barber-whatsapp.js', 'public/js/barber-finance.js', 'public/js/admin.js', 'scripts/test-barber-booking-local.cjs', 'scripts/test-barber-whatsapp.cjs', 'scripts/test-barber-closed-dates.cjs']) checkSyntax(file);
+const firebaseConfig = JSON.parse(read('firebase.json'));
+const indexes = JSON.parse(read('firestore.indexes.json'));
+assert.equal(firebaseConfig.hosting?.public, 'public', 'Hosting public directory changed unexpectedly');
+assert.ok(Array.isArray(indexes.indexes), 'Firestore indexes file is invalid');
+
+const html = read('public/barbers.html');
+const client = read('public/js/barbers.js');
+const server = read('server/server.js');
+const xpay = read('server/xpay.js');
+const rules = read('firestore.rules');
+const home = read('public/index.html');
+const admin = read('public/js/admin.js');
+const adminHtml = read('public/admin.html');
+const localTest = read('scripts/test-barber-booking-local.cjs');
+
+const ids = new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]));
+const referencedIds = new Set([...client.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(match => match[1]));
+const missingIds = [...referencedIds].filter(id => !ids.has(id));
+assert.deepEqual(missingIds, [], `Missing HTML IDs referenced by barbers.js: ${missingIds.join(', ')}`);
+const scheduleHtml = read('public/barber-schedule.html');
+const scheduleClient = read('public/js/barber-schedule.js');
+const scheduleIds = new Set([...scheduleHtml.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]));
+const scheduleReferencedIds = new Set([...scheduleClient.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(match => match[1]));
+const missingScheduleIds = [...scheduleReferencedIds].filter(id => !scheduleIds.has(id));
+assert.deepEqual(missingScheduleIds, [], `Missing HTML IDs referenced by barber-schedule.js: ${missingScheduleIds.join(', ')}`);
+const dedicatedBookingHtml = read('public/barber-booking.html');
+const dedicatedBookingClient = read('public/js/barber-booking.js');
+const dedicatedBookingIds = new Set([...dedicatedBookingHtml.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]));
+const dedicatedBookingReferences = new Set([...dedicatedBookingClient.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(match => match[1]));
+const missingDedicatedBookingIds = [...dedicatedBookingReferences].filter(id => !dedicatedBookingIds.has(id));
+assert.deepEqual(missingDedicatedBookingIds, [], `Missing HTML IDs referenced by barber-booking.js: ${missingDedicatedBookingIds.join(', ')}`);
+
+
+assert.match(html, /id="bookingSlots"/);
+assert.match(home, /href="\/barbers"/);
+assert.match(server, /app\.post\('\/api\/barbers\/claim'/, 'A secure one-time barber account claim route is required');
+assert.match(server, /app\.get\('\/api\/barber-schedule\/me'/, 'Barbers must be able to load their own profile and appointments');
+assert.match(server, /app\.get\('\/api\/barbershops\/:shopId\/bookings'/, 'Owners need a shop-and-date-scoped appointment ledger');
+assert.match(server, /shopSnap\.data\(\)\?\.ownerId !== req\.user\.uid/, 'Daily appointment ledger must enforce salon-owner authorization');
+assert.match(server, /app\.get\('\/api\/barbershops\/:shopId\/financial-report'/, 'Owners need a date-range financial report endpoint');
+assert.match(server, /daySpan > 30/, 'Financial reports must be limited to 31 calendar days');
+assert.match(server, /attendanceUpdatedByLabel/, 'Attendance changes must identify the actor');
+assert.match(server, /app\.post\('\/api\/barber-bookings\/attendance'/, 'Owners and assigned barbers need a server-validated attendance action');
+assert.match(server, /attendanceStatus === 'no_show'/, 'No-show bookings must not be eligible for customer reviews');
+assert.match(server, /app\.post\('\/api\/barber-schedule\/me'/, 'Barbers must be able to update their own schedules');
+assert.match(server, /app\.post\('\/api\/barber-schedule\/me\/photo'/, 'Barbers must be able to update their profile photo');
+assert.match(server, /shopOpenTime: shop\.openTime/, 'Barber profile must show salon hours separately from personal hours');
+assert.match(server, /customerName: item\.customerName/, 'A barber must see the customer name for their assigned bookings');
+assert.match(server, /createdAt: item\.createdAt/, 'A barber must see when each booking was created');
+assert.match(scheduleClient, /data-cancel-barber-booking/, 'Barbers must have a UI action for cancelling their assigned unpaid booking');
+assert.match(html, /id="updateShopPhotoForm"/, 'Shop owners need a UI for updating the salon photo');
+for (const id of ['managedBookingShopSelect','managedBookingDate','managedBookingStatus','managedBookingSearch','managedBookingStats','managedBookingList','exportManagedBookings','financeReportStart','financeReportEnd','loadFinanceReport','financeReportStats','financeByBarber','financeByService','financeByDay','exportFinanceReport']) assert.ok(ids.has(id), `Owner appointment console control is missing: ${id}`);
+assert.match(client, /exportManagedBookingsCsv/, 'Owner appointment console should support CSV export');
+assert.match(client, /summarizeBarberFinance/, 'Owner financial report should use the tested finance summarizer');
+assert.match(client, /exportFinanceReportCsv/, 'Owner financial report should support CSV export');
+assert.match(read('public/salon.html'), /id="financeReportStats"/, 'Dedicated salon management page must include the financial report UI');
+assert.match(scheduleHtml, /id="barberTodayAppointments"/, 'Barber needs a daily attendance list');
+assert.match(scheduleClient, /data-attendance-action/, 'Barbers need attendance controls on their own schedule page');
+const whatsapp = read('public/js/barber-whatsapp.js');
+assert.match(client, /createBarberWhatsAppReminderUrl/, 'Salon owners should be able to prepare appointment reminders in WhatsApp');
+assert.match(scheduleClient, /createBarberWhatsAppReminderUrl/, 'Barbers should be able to prepare appointment reminders in WhatsApp');
+assert.match(whatsapp, /https:\/\/wa\.me\//, 'WhatsApp reminders must use the official click-to-chat URL format');
+assert.match(whatsapp, /attendanceStatus/, 'Completed or no-show bookings must not get reminder links');
+assert.match(read('public/barbers.html'), /id="managedBookingList"/);
+
+assert.match(server, /barberVerifyImagePath/, 'Barber image uploads must be validated server-side');
+const closedDateRules = read('server/barber-schedule-rules.js');
+assert.match(server, /isBarberClosedOnDate\(barber, date\)/, 'Availability and booking creation must respect individual one-off holidays.');
+assert.match(server, /BARBER_DATE_CLOSED: 409/, 'A closed date must fail as a conflict rather than an internal server error.');
+assert.match(server, /closedDates, active/, 'Owner settings must persist closed dates without losing them on normal updates.');
+assert.match(server, /closedDates: Array\.isArray\(barber\.closedDates\)/, 'Barber profile must expose its own saved closed dates.');
+assert.match(closedDateRules, /BARBER_CLOSED_DATES_INVALID/, 'Closed dates must be validated server-side.');
+assert.match(scheduleHtml, /name=\"closedDatesText\"/, 'Barbers need a UI field for individual holiday dates.');
+assert.match(scheduleClient, /data\.closedDates = parseClosedDatesText/, 'Barber self-service schedule must save individual holiday dates.');
+assert.match(client, /data\.closedDates = parseClosedDatesText/, 'Owners must be able to manage holiday dates for each barber.');
+assert.match(server, /app\.post\('\/api\/barber-bookings'/);
+assert.match(server, /app\.get\('\/api\/barbershops\/[^']*availability/);
+assert.match(server, /app\.post\('\/api\/barbershops\/[^']*schedule/);
+assert.match(server, /app\.post\('\/api\/barber-bookings\/mark-cash-paid'/);
+assert.match(server, /app\.post\('\/api\/barber-bookings\/:bookingId\/review'/, 'Customer review API route is required');
+assert.match(server, /booking\.ratingSubmitted === true/, 'A booking must not receive duplicate reviews');
+assert.match(server, /BARBER_REVIEW_TOO_EARLY/, 'The server must prevent reviews before the appointment ends');
+assert.match(server, /ratingCount: nextCount/, 'Barber rating aggregates must be updated');
+assert.match(server, /app\.get\('\/api\/cron\/barber-booking-cleanup', async/, 'Cron cleanup must not require a Firebase user');
+assert.match(server, /!expectedSecret \|\| authorization !== `Bearer \${expectedSecret}`/, 'Cron cleanup must require CRON_SECRET');
+assert.match(read('server/.env.example'), /^CRON_SECRET=/m, 'CRON_SECRET is documented for production setup');
+assert.match(server, /tx\.set\(lockRefs\[i\]/, 'Slot locks must be written transactionally');
+assert.match(server, /barberConfirmXPayPayment/);
+assert.match(server, /'barberBooking'/, 'The server must recognize the booking permission');
+assert.match(admin, /\['barberBooking', 'حجز صالونات الحلاقة'\]/, 'Admins must be able to disable booking for a user');
+assert.match(server, /closedDays, status: 'pending'/, 'New barber shops must require admin approval');
+assert.match(server, /app\.get\('\/api\/admin\/barbershops\/pending'/, 'Admin pending-shop listing route is required');
+assert.match(server, /app\.post\('\/api\/admin\/barbershops\/:shopId\/review'/, 'Admin shop review route is required');
+assert.match(server, /req\.user\.admin !== true/, 'Admin-only routes must require the verified admin claim');
+const adminIds = new Set([...adminHtml.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]));
+assert.ok(adminIds.has('adminBarberShops') && adminIds.has('refreshBarberShops'), 'Admin review panel controls must exist in admin.html');
+assert.match(adminHtml, /id="adminBarberShops"/, 'Admin UI must display pending barber shops');
+assert.match(adminHtml, /data-section="barber-shops"/, 'Admin UI must provide a barber-shop review tab');
+assert.match(admin, /api\/admin\/barbershops\/pending/, 'Admin UI must load pending barber shops from the server');
+assert.match(admin, /data-review-barber-shop/, 'Admin UI must offer shop review actions');
+assert.match(client, /قيد مراجعة الإدارة/, 'Shop owners must be told new shops require approval');
+assert.match(localTest, /BARBER_SHOP_NOT_PENDING|status.*pending/i, 'Local test must cover the pending approval flow');
+assert.match(server, /createXPayRefund\(\{ paymentIntentId, orderId: String\(result\.bookingId\)/, 'Late online payments must not silently confirm expired reservations');
+assert.match(xpay, /context: 'barber_booking'/);
+assert.match(rules, /match \/barberBookings\/{bookingId}\s*\{\s*allow read, create, update, delete: if false;/);
+assert.match(rules, /match \/barberBookingLocks\/{lockId}\s*\{\s*allow read, create, update, delete: if false;/);
+assert.match(rules, /match \/barberAccounts\/{userId}\s*\{\s*allow read, create, update, delete: if false;/);
+assert.match(rules, /match \/barberClaimCodes\/{claimCodeHash}\s*\{\s*allow read, create, update, delete: if false;/);
+assert.match(client, /const API_BASE = \(\(\) =>/);
+assert.match(client, /http:\/\/127\.0\.0\.1:3000/, 'Local Hosting must call the local API');
+assert.match(client, /https:\/\/elawamy-file-server\.vercel\.app/, 'Production API remains configured for production origins');
+const firebaseClient = read('public/js/firebase.js');
+assert.match(firebaseClient, /connectAuthEmulator\(auth, 'http:\/\/127\.0\.0\.1:9099'/);
+assert.match(firebaseClient, /connectFirestoreEmulator\(db, '127\.0\.0\.1', 8080\)/);
+assert.match(server, /LOCAL_DEV_ORIGINS/);
+assert.match(server, /const localEmulators =/);
+assert.doesNotMatch(client, /\b(addDoc|setDoc|updateDoc|deleteDoc)\b/, 'Browser must not write booking data directly to Firestore');
+
+console.log('Barber booking checks passed: syntax, page IDs, API routes, transactional locks, rules isolation, WhatsApp reminders, and XPay context.');

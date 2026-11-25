@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>إضافة خدمة | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<header>
+  <a class="logo" href="/">ElaWamy</a>
+  <nav>
+    <a href="/">الخدمات</a>
+    <a href="/seller-dashboard">لوحة البائع</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/profile">حسابي</a>
+    <a href="/support">الدعم الفني</a>
+  </nav>
+</header>
+
+<main>
+  <div class="box wide">
+
+    <h1>أضف خدمتك</h1>
+    <p class="muted">
+      اكتب عرضًا واضحًا يساعد المشتري على فهم ما سيحصل عليه.
+    </p>
+
+    <h3>المعلومات الأساسية</h3>
+
+    <input
+      id="name"
+      maxlength="80"
+      placeholder="اسم الخدمة"
+    >
+
+    <textarea
+      id="description"
+      maxlength="1200"
+      placeholder="وصف الخدمة بالتفصيل"
+    ></textarea>
+
+    <div class="form-grid">
+      <select id="category">
+        <option value="">اختر التصنيف</option>
+        <option>تصميم</option>
+        <option>برمجة</option>
+        <option>كتابة وترجمة</option>
+        <option>تسويق</option>
+        <option>فيديو وصوت</option>
+        <option>أعمال</option>
+        <option>تعليم وتدريب</option>
+      </select>
+
+      <input
+        id="price"
+        type="number"
+        min="1"
+        max="100000"
+        step="1"
+        placeholder="السعر بالجنيه"
+      >
+    </div>
+
+    <input
+      id="deliveryDays"
+      type="number"
+      min="1"
+      max="90"
+      value="3"
+      placeholder="مدة التسليم بالأيام"
+    >
+
+    <input
+      id="imageUrl"
+      type="url"
+      placeholder="رابط صورة الخدمة (اختياري)"
+    >
+
+    <hr>
+
+    <h3>الكلمات المفتاحية</h3>
+    <p class="muted">
+      أضف كلمات تساعد المشترين في العثور على خدمتك.
+    </p>
+
+    <input
+      id="tags"
+      maxlength="300"
+      placeholder="مثال: تصميم لوجو، هوية بصرية، شعار"
+    >
+
+    <hr>
+
+    <h3>متطلبات المشتري</h3>
+    <p class="muted">
+      ما المعلومات التي تحتاجها من المشتري لتنفيذ الخدمة؟
+    </p>
+
+    <div id="requirementsList"></div>
+
+    <button
+      type="button"
+      id="addRequirement"
+      class="btn"
+    >
+      + إضافة متطلب
+    </button>
+
+    <hr>
+
+    <h3>إضافات الخدمة</h3>
+    <p class="muted">
+      خدمات إضافية يمكن للمشتري اختيارها مقابل مبلغ إضافي.
+    </p>
+
+    <div id="extrasList"></div>
+
+    <button
+      type="button"
+      id="addExtra"
+      class="btn"
+    >
+      + إضافة إضافة
+    </button>
+
+    <hr>
+
+    <h3>الأسئلة الشائعة</h3>
+    <p class="muted">
+      أضف الأسئلة التي يكررها المشترون مع إجاباتها.
+    </p>
+
+    <div id="faqList"></div>
+
+    <button
+      type="button"
+      id="addFaq"
+      class="btn"
+    >
+      + إضافة سؤال
+    </button>
+
+    <hr>
+
+    <h3>تعليمات للمشتري</h3>
+    <p class="muted">
+      اكتب أي تعليمات أو معلومات مهمة يجب أن يعرفها المشتري.
+    </p>
+
+    <textarea
+      id="instructions"
+      maxlength="2000"
+      placeholder="مثال: بعد شراء الخدمة أرسل الملفات المطلوبة بصيغة واضحة..."
+    ></textarea>
+
+    <button
+      id="save"
+      class="btn"
+      type="button"
+    >
+      نشر الخدمة
+    </button>
+
+    <p id="message"></p>
+
+  </div>
+</main>
+
+<script type="module" src="/js/add-service.js"></script>
+<script type="module" src="/js/notifications.js"></script>
+
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script><script type="module">import { loadCategories } from "/js/category-source.js"; loadCategories("category");</script></body>
+</html>

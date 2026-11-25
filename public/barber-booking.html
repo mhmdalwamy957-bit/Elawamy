@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="اختار الحلاق والموعد المناسب واحجز خدمة الحلاقة في صالونك المفضل.">
+  <meta name="theme-color" content="#15947f">
+  <title>حجز موعد حلاقة | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/barbers.css">
+</head>
+<body class="barbers-page">
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/" aria-label="ElaWamy">ElaWamy</a>
+    <nav class="barber-nav" aria-label="القائمة الرئيسية">
+      <a href="/barbers">الصالونات</a>
+      <a href="/barber-booking" aria-current="page">حجز موعد</a>
+      <a href="/barber-schedule">مواعيدي كحلاق</a>
+      <a href="/salon" data-auth data-owner-nav hidden>حساب الصالون</a>
+      <a href="/login?redirect=%2Fbarber-booking" data-guest>دخول / تسجيل</a>
+      <span class="barber-user" data-auth hidden id="barberUserLabel"></span>
+    </nav>
+  </div>
+</header>
+<main class="barbers-main">
+  <section class="barber-hero">
+    <div>
+      <span class="barber-eyebrow">ElaWamy · حجز مباشر</span>
+      <h1>احجز موعد الحلاقة</h1>
+      <p>اختار الصالون والخدمة والحلاق، وبعدها اختار ميعادًا متاحًا. كل حلاق له جدول مستقل، والدفع نقدًا داخل الصالون.</p>
+      <a class="barber-hero-link" href="/barbers">الرجوع إلى الصالونات ←</a>
+    </div>
+    <div class="barber-hero-icon" aria-hidden="true">✂</div>
+  </section>
+  <div id="bookingNotice" class="barber-notice" role="status" aria-live="polite" hidden></div>
+  <section class="barber-section barber-panel">
+    <div class="barber-section-heading"><div><span class="barber-eyebrow">اختار التفاصيل</span><h2>تفاصيل الحجز</h2></div></div>
+    <div id="selectedShopSummary" class="barber-selected-shop" hidden></div>
+    <form id="bookingForm" class="barber-form">
+      <div class="barber-form-grid">
+        <label>صالون الحلاقة<select id="bookingShop" required><option value="">جاري تحميل الصالونات...</option></select></label>
+        <label>الخدمة<select id="bookingService" required disabled><option value="">اختار الصالون أولًا</option></select></label>
+        <label>الحلاق<select id="bookingBarber" required disabled><option value="">اختار الصالون أولًا</option></select></label>
+        <label>اليوم<input id="bookingDate" type="date" required></label>
+        <label>اسمك<input id="bookingCustomerName" type="text" minlength="2" maxlength="100" required autocomplete="name" placeholder="اسم العميل"></label>
+        <label>رقم الموبايل (اختياري)<input id="bookingCustomerPhone" type="tel" maxlength="24" autocomplete="tel" placeholder="01xxxxxxxxx"></label>
+      </div>
+      <div id="bookingBarberPreview" class="barber-selected-shop barber-barber-preview" hidden></div>
+      <div id="bookingPaymentHelp" class="barber-help">الدفع نقدًا داخل الصالون فقط. المبلغ يُدفع للصالون عند الحضور.</div>
+      <p id="bookingSigninHint" class="barber-muted" hidden>عشان تأكد الحجز، <a href="/login?redirect=%2Fbarber-booking">سجّل الدخول أو أنشئ حسابًا</a>.</p>
+      <div class="barber-slots-heading"><h3>المواعيد المتاحة</h3><span id="slotsMeta">اختار الصالون والخدمة والحلاق واليوم.</span></div>
+      <div id="bookingSlots" class="barber-slots" aria-live="polite"><p class="barber-muted">اختار تفاصيل الحجز لعرض المواعيد.</p></div>
+      <input id="bookingStartTime" type="hidden" required>
+      <div id="bookingSummary" class="barber-summary" hidden></div>
+      <button id="submitBooking" class="barber-button barber-button-primary" type="submit" disabled>أكد الحجز</button>
+    </form>
+  </section>
+  <section id="bookingSuccess" class="barber-section barber-panel" hidden>
+    <h2>تم تسجيل الحجز بنجاح ✅</h2>
+    <p id="bookingSuccessText" class="barber-muted"></p>
+    <div id="bookingReceipt" class="barber-receipt"></div>
+    <button id="printBookingReceipt" type="button" class="barber-button barber-button-primary no-print">طباعة تأكيد الحجز</button>
+    <a class="barber-button barber-button-light no-print" href="/barbers">الرجوع للصالونات</a>
+  </section>
+  <section id="signInPrompt" class="barber-signin" hidden>
+    <div><h2>احجز موعدك بسهولة</h2><p>تقدر تتصفح المواعيد بدون تسجيل، لكن لازم تسجل الدخول لتأكيد الحجز.</p></div>
+    <a class="barber-button barber-button-primary" href="/login?redirect=%2Fbarber-booking">دخول / تسجيل</a>
+  </section>
+</main>
+<footer class="barber-footer"><a href="/">ElaWamy</a><span>حجز صالونات الحلاقة الرجالي</span><a href="/support">الدعم الفني</a></footer>
+<script type="module" src="/js/barber-booking.js"></script>
+</body>
+</html>

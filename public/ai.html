@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b46">
+  <meta name="description" content="مساعد العوامي الذكي لكتابة أوصاف الخدمات والإعلانات ومساعدتك في استخدام المنصة.">
+  <title>العوامي AI | المساعد الذكي</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/ai-assistant.css">
+</head>
+<body class="elawamy-ai-page">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="/" aria-label="العوامي">ElaWamy</a>
+      <nav id="mainNav">
+        <a href="/">الرئيسية</a>
+        <a href="/category">الخدمات</a>
+        <a href="/orders">طلباتي</a>
+        <a href="/profile">حسابي</a>
+        <a href="/support">الدعم الفني</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="ai-shell">
+    <section class="ai-intro">
+      <div class="ai-mark" aria-hidden="true">AI</div>
+      <div>
+        <p class="ai-eyebrow">ELA WAMY SMART ASSISTANT</p>
+        <h1>العوامي الذكي</h1>
+        <p>مساعدك في كتابة الخدمات والإعلانات، تنظيم الأفكار، وفهم طريقة استخدام منصة العوامي.</p>
+      </div>
+    </section>
+
+    <section class="ai-card" aria-label="محادثة العوامي الذكي">
+      <div class="ai-card-head">
+        <div>
+          <strong>محادثة جديدة</strong>
+          <span id="aiStatus" role="status">جارٍ التحقق من حسابك…</span>
+        </div>
+        <button id="newChat" class="ai-quiet-button" type="button">محادثة جديدة</button>
+      </div>
+
+      <div class="ai-privacy" role="note">
+        تنبيه خصوصية: لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع أو أرقام هواتف أو بيانات طلبات أو معلومات خاصة بالعملاء. قد تُعالج الرسائل لدى Gemini أو المراجع المجاني الخارجي عند تفعيله، وقد تُستخدم بيانات Gemini المجانية لتحسين خدمات Google. يراجع مساعد ثانٍ الرد عند توفر حصته. لا تُخزَّن المحادثة في هذه الصفحة بعد إغلاقها.
+      </div>
+
+      <div id="aiMessages" class="ai-messages" aria-live="polite">
+        <article class="ai-message assistant">
+          <span class="ai-message-label">العوامي AI</span>
+          <p>أهلًا بك! أقدر أساعدك في كتابة وصف خدمة، تجهيز إعلان، تحسين محتوى، أو ترتيب خطة لتطوير مشروعك. اكتب لي المطلوب.</p>
+        </article>
+      </div>
+
+      <div class="ai-quick-actions" aria-label="مهام سريعة">
+        <button type="button" data-prompt="ساعدني أكتب وصفًا احترافيًا لخدمة جديدة على العوامي. اسألني عن التفاصيل الناقصة.">✍️ كتابة وصف خدمة</button>
+        <button type="button" data-prompt="اكتب لي إعلانًا تسويقيًا لخدمة على منصة العوامي، واطلب مني نوع الخدمة والجمهور المستهدف.">📣 كتابة إعلان</button>
+        <button type="button" data-prompt="ساعدني أضع خطة بسيطة لتحسين متجر أو خدمة على العوامي، خطوة بخطوة.">📈 خطة تطوير</button>
+        <button type="button" data-prompt="اشرح لي كيف أستخدم العوامي لإضافة خدمة ومتابعة الطلبات، واذكر ما تعرفه فقط ولا تخمّن.">❔ مساعدة في العوامي</button>
+        <button type="button" data-prompt="ساعدني أجهز خدمة جديدة. اسألني عن الاسم والتصنيف والوصف والسعر ومدة التسليم. لا تحفظها إلا عندما أطلب منك صراحةً حفظها كمسودة.">📝 تجهيز مسودة خدمة</button>
+      </div>
+
+      <form id="aiForm" class="ai-compose">
+        <label class="visually-hidden" for="aiInput">اكتب رسالتك إلى العوامي الذكي</label>
+        <textarea id="aiInput" rows="2" maxlength="2500" placeholder="اكتب ما تريد من العوامي الذكي…" required disabled></textarea>
+        <button id="aiSend" type="submit" disabled>إرسال</button>
+      </form>
+      <p class="ai-footnote">فريق دعم العملاء: مساعد يكتب الرد ومراجع ثانٍ يدققه. يمكن حفظ مسودة خدمة خاصة بك بعد طلبك الصريح. لا ينشر الخدمات ولا يغيّر الطلبات أو المدفوعات أو حسابات المستخدمين.</p>
+    </section>
+
+    <section class="ai-drafts-card" aria-labelledby="aiDraftsTitle">
+      <div class="ai-drafts-head">
+        <div>
+          <h2 id="aiDraftsTitle">مسودات الخدمات المحفوظة</h2>
+          <p>مسوداتك الخاصة التي طلبت من المساعد حفظها.</p>
+        </div>
+        <button id="refreshDrafts" class="ai-quiet-button" type="button">تحديث</button>
+      </div>
+      <div id="aiDrafts" class="ai-drafts-list">
+        <p class="ai-drafts-empty">جارٍ تحميل المسودات…</p>
+      </div>
+    </section>
+    <p class="ai-footnote"><a href="/ai-team-admin.html">لوحة فريق تطوير العوامي — للأدمن فقط</a></p>
+    <a class="ai-back-link" href="/">العودة إلى سوق العوامي</a>
+  </main>
+
+  <script type="module" src="/js/ai-assistant.js"></script>
+  <script type="module" src="/js/site-nav.js"></script>
+</body>
+</html>

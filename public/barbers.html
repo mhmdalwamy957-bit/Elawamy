@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="احجز موعد حلاقة رجالي في صالونات قريبة منك عبر ElaWamy.">
+  <meta name="theme-color" content="#15947f">
+  <title>حجز صالونات الحلاقة الرجالي | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/barbers.css">
+</head>
+<body class="barbers-page">
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/" aria-label="ElaWamy">ElaWamy</a>
+    <nav class="barber-nav" aria-label="القائمة الرئيسية">
+      <a href="/">الرئيسية</a>
+      <a href="/barbers" aria-current="page">الصالونات</a>
+      <a href="/barber-booking">حجز موعد</a>
+      <a href="/barber-schedule">مواعيدي كحلاق</a>
+      <a href="/salon" data-auth data-owner-nav hidden>حساب الصالون</a>
+      <a href="/login?redirect=%2Fbarbers" data-guest>دخول / تسجيل</a>
+      <span class="barber-user" data-auth hidden id="barberUserLabel"></span>
+    </nav>
+  </div>
+</header>
+
+<main class="barbers-main">
+  <section class="barber-hero">
+    <div>
+      <span class="barber-eyebrow">ElaWamy · خدمات محلية</span>
+      <h1>احجز حلاقتك من غير انتظار</h1>
+      <p>اختار صالون الحلاقة، الخدمة، الحلاق، والوقت المناسب. الموعد بيتقفل تلقائيًا بمجرد نجاح الحجز.</p>
+      <a class="barber-hero-link" href="#barberShops">استكشف الصالونات <span aria-hidden="true">←</span></a>
+    </div>
+    <div class="barber-hero-icon" aria-hidden="true">✂</div>
+  </section>
+
+  <div id="barberNotice" class="barber-notice" role="status" aria-live="polite" hidden></div>
+
+  <section id="barberShops" class="barber-section">
+    <div class="barber-section-heading">
+      <div><span class="barber-eyebrow">اختار مكانك</span><h2>صالونات الحلاقة الرجالي</h2></div>
+      <label class="barber-search-label">بحث بالاسم أو المدينة
+        <input id="shopSearch" type="search" placeholder="مثال: دمنهور" autocomplete="off">
+      </label>
+    </div>
+    <div id="shopsGrid" class="barber-shops-grid" aria-live="polite">
+      <div class="barber-empty">جاري تحميل الصالونات...</div>
+    </div>
+  </section>
+
+  <section id="bookingPanel" class="barber-section barber-panel" hidden>
+    <div class="barber-section-heading">
+      <div><span class="barber-eyebrow">موعدك في خطوتين</span><h2 id="bookingTitle">احجز موعدك</h2></div>
+      <button type="button" class="barber-button barber-button-light" id="closeBooking">إغلاق</button>
+    </div>
+    <form id="bookingForm" class="barber-form">
+      <div class="barber-form-grid">
+        <label>الخدمة
+          <select id="bookingService" required><option value="">اختار الخدمة</option></select>
+        </label>
+        <label>الحلاق
+          <select id="bookingBarber" required><option value="">اختار الحلاق</option></select>
+        </label>
+        <label>اليوم
+          <input id="bookingDate" type="date" required>
+        </label>
+        <label>اسمك
+          <input id="bookingCustomerName" type="text" minlength="2" maxlength="100" required autocomplete="name" placeholder="اسم العميل">
+        </label>
+        <label>رقم الموبايل (اختياري)
+          <input id="bookingCustomerPhone" type="tel" maxlength="24" autocomplete="tel" placeholder="01xxxxxxxxx">
+        </label>
+        <label>طريقة الدفع
+          <select id="bookingPaymentMethod" required>
+            <option value="onsite">الدفع في الصالون</option>
+            <option value="online" id="onlinePaymentOption" disabled>الدفع أونلاين (غير متاح حاليًا)</option>
+          </select>
+        </label>
+      </div>
+      <div id="bookingBarberPreview" class="barber-selected-shop barber-barber-preview" hidden></div>
+      <div id="onlinePaymentHelp" class="barber-help">تقدر تحجز وتدفع في الصالون. الدفع أونلاين يظهر عند تفعيل بوابة الدفع.</div>
+      <p id="bookingSigninHint" class="barber-muted" hidden>لإتمام الحجز، <a href="/login?redirect=%2Fbarbers">سجّل الدخول أو أنشئ حسابًا</a>.</p>
+      <div class="barber-slots-heading"><h3>المواعيد المتاحة</h3><span id="slotsMeta">اختار الخدمة والحلاق واليوم أولًا.</span></div>
+      <div id="bookingSlots" class="barber-slots" aria-live="polite"><p class="barber-muted">اختار تفاصيل الحجز لعرض المواعيد.</p></div>
+      <input id="bookingStartTime" type="hidden" required>
+      <div id="bookingSummary" class="barber-summary" hidden></div>
+      <button id="submitBooking" class="barber-button barber-button-primary" type="submit" disabled>أكد الحجز</button>
+      <p class="barber-muted barber-small">المواعيد بتوقيت مصر. الدفع نقدًا داخل الصالون فقط، ويُسدد المبلغ للصالون عند الحضور.</p>
+    </form>
+  </section>
+
+  <section id="bookingSuccess" class="barber-section barber-panel" hidden>
+    <h2>تم تأكيد الحجز ✅</h2>
+    <p class="barber-muted">احتفظ بإيصالك، ويمكنك طباعته أو حفظه PDF.</p>
+    <div id="bookingReceipt" class="barber-receipt"></div>
+    <button id="printBookingReceipt" type="button" class="barber-button barber-button-primary no-print">طباعة تأكيد الحجز</button>
+    <a class="barber-button barber-button-light no-print" href="/barbers">الرجوع للصالونات</a>
+  </section>
+
+  <section id="myBookingsSection" class="barber-section" hidden>
+    <div class="barber-section-heading"><div><span class="barber-eyebrow">تابع مواعيدك</span><h2>حجوزاتي</h2></div><button id="reloadBookings" class="barber-button barber-button-light" type="button">تحديث</button></div>
+    <div id="myBookings" class="barber-bookings-list"><div class="barber-empty">جاري تحميل الحجوزات...</div></div>
+  </section>
+
+  <section id="ownerPanel" class="barber-section" hidden>
+    <div class="barber-section-heading"><div><span class="barber-eyebrow">حساب صاحب الصالون</span><h2>حساب الصالون وإعداداته</h2></div></div>
+    <p class="barber-help">دي لوحة إدارة الصالون المرتبطة بحسابك المسجّل به. من هنا تقدر تعدّل بيانات الصالون، أوقات العمل، الخدمات، الحلاقين، الصور، وتراجع سجل التعديلات والحجوزات.</p>
+    <section class="barber-operations-panel" aria-labelledby="managedBookingsHeading">
+      <div class="barber-section-heading">
+        <div><span class="barber-eyebrow">إدارة التشغيل اليومية</span><h2 id="managedBookingsHeading">لوحة المواعيد والتحصيل</h2></div>
+        <button id="refreshManagedBookings" class="barber-button barber-button-light" type="button">تحديث المواعيد</button>
+      </div>
+      <p class="barber-muted">تابع حجوزات يوم محدد، حالة الحضور، والمبالغ النقدية. تسجيل الحضور متاح بعد نهاية الموعد، وكل تغيير يُسجّل في سجل الصالون.</p>
+      <div class="barber-operations-filters">
+        <label>الصالون<select id="managedBookingShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <label>تاريخ الحجوزات<input id="managedBookingDate" type="date" required></label>
+        <label>حالة الحجز<select id="managedBookingStatus"><option value="all">كل الحالات</option><option value="confirmed">مؤكد</option><option value="cancelled">ملغي</option><option value="completed">تم التنفيذ</option><option value="no_show">العميل لم يحضر</option></select></label>
+        <label>بحث سريع<input id="managedBookingSearch" type="search" placeholder="اسم العميل أو الحلاق أو الخدمة"></label>
+      </div>
+      <div id="managedBookingStats" class="barber-operations-stats" aria-live="polite"><div class="barber-empty">اختار صالونًا وتاريخًا لعرض الملخص.</div></div>
+      <div class="barber-operations-toolbar"><span id="managedBookingCount" class="barber-muted" aria-live="polite"></span><button id="exportManagedBookings" type="button" class="barber-button barber-button-light" disabled>تصدير CSV</button></div>
+      <div id="managedBookingList" class="barber-bookings-list"><div class="barber-empty">اختار صالونًا وتاريخًا لعرض المواعيد.</div></div>
+    </section>
+    <section class="barber-finance-panel" aria-labelledby="financeReportHeading">
+      <div class="barber-section-heading">
+        <div><span class="barber-eyebrow">تقرير مالي</span><h2 id="financeReportHeading">إيرادات الصالون والحلاقين</h2></div>
+        <button id="loadFinanceReport" type="button" class="barber-button barber-button-primary">تحديث التقرير</button>
+      </div>
+      <p class="barber-muted">التقرير للصالون المحدد في لوحة المواعيد أعلاه. قيمة الخدمات المنفذة تُحسب من المواعيد التي سُجل حضورها «تم تنفيذ الخدمة»، والتحصيل من الحجوزات غير الملغاة التي تم تأكيد دفعها.</p>
+      <div class="barber-finance-filters">
+        <label>من تاريخ<input id="financeReportStart" type="date" required></label>
+        <label>إلى تاريخ<input id="financeReportEnd" type="date" required></label>
+        <button id="financeReportThisMonth" type="button" class="barber-button barber-button-light">الشهر الحالي</button>
+        <button id="financeReportLast7Days" type="button" class="barber-button barber-button-light">آخر 7 أيام</button>
+      </div>
+      <p id="financeReportNotice" class="barber-muted" role="status" aria-live="polite">اختار الفترة واضغط «تحديث التقرير».</p>
+      <div id="financeReportStats" class="barber-operations-stats" aria-live="polite"><div class="barber-empty">لم يتم تحميل التقرير بعد.</div></div>
+      <div class="barber-finance-breakdowns">
+        <section class="barber-finance-breakdown" aria-labelledby="financeByBarberHeading">
+          <h3 id="financeByBarberHeading">ملخص كل حلاق</h3>
+          <div id="financeByBarber" class="barber-finance-table-wrap"><p class="barber-empty">لا توجد بيانات حتى الآن.</p></div>
+        </section>
+        <section class="barber-finance-breakdown" aria-labelledby="financeByServiceHeading">
+          <h3 id="financeByServiceHeading">ملخص كل خدمة</h3>
+          <div id="financeByService" class="barber-finance-table-wrap"><p class="barber-empty">لا توجد بيانات حتى الآن.</p></div>
+        </section>
+      </div>
+      <section class="barber-finance-breakdown" aria-labelledby="financeByDayHeading">
+        <h3 id="financeByDayHeading">ملخص يوم بيوم</h3>
+        <div id="financeByDay" class="barber-finance-table-wrap"><p class="barber-empty">لا توجد بيانات حتى الآن.</p></div>
+      </section>
+      <div class="barber-operations-toolbar"><span id="financeReportMeta" class="barber-muted" aria-live="polite"></span><button id="exportFinanceReport" type="button" class="barber-button barber-button-light" disabled>تصدير التقرير CSV</button></div>
+    </section>
+    <details class="barber-disclosure" open>
+      <summary>إعدادات وبيانات الصالون</summary>
+      <form id="updateShopProfileForm" class="barber-form">
+        <label>الصالون<select id="profileShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <div class="barber-form-grid">
+          <label>اسم الصالون<input name="name" required minlength="3" maxlength="100"></label>
+          <label>رقم الهاتف<input name="phone" type="tel" required minlength="6" maxlength="24"></label>
+          <label>المدينة<input name="city" required minlength="2" maxlength="80"></label>
+          <label>العنوان<input name="address" required minlength="3" maxlength="220"></label>
+          <label class="barber-wide">وصف الصالون<textarea name="description" rows="3" maxlength="700"></textarea></label>
+        </div>
+        <button class="barber-button barber-button-primary" type="submit">حفظ بيانات الصالون</button>
+        <p id="shopUpdatedMeta" class="barber-muted barber-small"></p>
+      </form>
+    </details>
+    <details class="barber-disclosure" open>
+      <summary>إدارة الحلاقين الحاليين والجدد</summary>
+      <label class="barber-shop-picker">اختار الصالون
+        <select id="managedBarberShopSelect" required><option value="">اختار صالونك</option></select>
+      </label>
+      <p class="barber-muted barber-small">اضغط على ⋮ أعلى بطاقة أي حلاق لفتح الإعدادات، إصدار كود ربط جديد، رفع الصورة أو إيقاف الحلاق مؤقتًا. القائمة تشمل الحلاقين القدامى والجدد.</p>
+      <div id="managedBarbersList" class="barber-employee-grid"><div class="barber-empty">اختار الصالون لعرض الحلاقين.</div></div>
+    </details>
+    <details class="barber-disclosure" open>
+      <summary>إدارة الخدمات والأسعار</summary>
+      <label class="barber-shop-picker">الصالون
+        <select id="managedServiceShopSelect" required><option value="">اختار صالونك</option></select>
+      </label>
+      <div id="managedServicesList" class="barber-managed-services"><div class="barber-empty">اختار الصالون لعرض الخدمات.</div></div>
+    </details>
+    <details class="barber-disclosure">
+      <summary>سجل آخر التعديلات</summary>
+      <div id="shopAuditList" class="barber-audit-list"><div class="barber-empty">اختار صالونًا لعرض السجل.</div></div>
+    </details>
+    <details class="barber-disclosure">
+      <summary>إنشاء حساب صالون جديد</summary>
+      <form id="createShopForm" class="barber-form">
+        <div class="barber-form-grid">
+          <label>اسم الصالون<input name="name" required minlength="3" maxlength="100" placeholder="اسم صالونك"></label>
+          <label>رقم الهاتف<input name="phone" required minlength="6" maxlength="24" type="tel" placeholder="01xxxxxxxxx"></label>
+          <label>المدينة<input name="city" required minlength="2" maxlength="80" placeholder="دمنهور"></label>
+          <label>العنوان<input name="address" required minlength="3" maxlength="220" placeholder="الشارع والمنطقة"></label>
+          <label class="barber-wide">صورة الصالون (مطلوبة، JPG أو PNG أو WebP حتى 8 ميجابايت)<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label>يفتح الساعة<input name="openTime" type="time" value="09:00" required></label>
+          <label>يقفل الساعة<input name="closeTime" type="time" value="21:00" required></label>
+          <label>اسم الحلاق الأول<input name="barberName" required minlength="2" maxlength="80" placeholder="اسم الحلاق"></label>
+          <label class="barber-wide">وصف الصالون<textarea name="description" maxlength="700" rows="2" placeholder="الخدمات المميزة وطريقة الوصول"></textarea></label>
+        </div>
+        <fieldset class="barber-days"><legend>أيام الإجازة</legend>
+          <label><input type="checkbox" name="closedDays" value="0"> الأحد</label>
+          <label><input type="checkbox" name="closedDays" value="1"> الاثنين</label>
+          <label><input type="checkbox" name="closedDays" value="2"> الثلاثاء</label>
+          <label><input type="checkbox" name="closedDays" value="3"> الأربعاء</label>
+          <label><input type="checkbox" name="closedDays" value="4"> الخميس</label>
+          <label><input type="checkbox" name="closedDays" value="5"> الجمعة</label>
+          <label><input type="checkbox" name="closedDays" value="6"> السبت</label>
+        </fieldset>
+        <button class="barber-button barber-button-primary" type="submit">إنشاء حساب صالون</button>
+        <div id="newShopClaimCode" class="barber-claim-code" hidden aria-live="polite"></div>
+      </form>
+    </details>
+
+    <div class="barber-management-grid">
+      <form id="updateShopPhotoForm" class="barber-form barber-manage-card">
+        <h3>تغيير صورة الصالون</h3>
+        <label>الصالون<select id="photoShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <label>الصورة الجديدة (JPG أو PNG أو WebP حتى 8 ميجابايت)<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+        <button class="barber-button barber-button-primary" type="submit">حفظ صورة الصالون</button>
+        <p class="barber-muted barber-small">الصورة ستظهر للعملاء في صفحة الصالونات بعد الحفظ.</p>
+      </form>
+      <form id="addServiceForm" class="barber-form barber-manage-card">
+        <h3>أضف خدمة</h3>
+        <label>الصالون<select id="serviceShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <label>اسم الخدمة<input name="name" required maxlength="100" placeholder="قص شعر"></label>
+        <label>المدة<select name="durationMinutes" required><option value="15">15 دقيقة</option><option value="30" selected>30 دقيقة</option><option value="45">45 دقيقة</option><option value="60">60 دقيقة</option><option value="75">75 دقيقة</option><option value="90">90 دقيقة</option><option value="120">120 دقيقة</option><option value="180">180 دقيقة</option></select></label>
+        <label>السعر بالجنيه<input name="price" required type="number" min="1" max="100000" step="0.01" placeholder="100"></label>
+        <button class="barber-button barber-button-primary" type="submit">إضافة الخدمة</button>
+      </form>
+      <form id="addBarberForm" class="barber-form barber-manage-card">
+        <h3>أضف حلاق</h3>
+        <label>الصالون<select id="barberShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <label>اسم الحلاق<input name="name" required minlength="2" maxlength="80" placeholder="اسم الحلاق"></label>
+        <button class="barber-button barber-button-primary" type="submit">إضافة الحلاق</button>
+        <p class="barber-muted barber-small">بعد الإضافة سيظهر كود ربط خاص بالحلاق. ابعته له ليفتح صفحة «مواعيدي كحلاق» ويربط حسابه مرة واحدة.</p>
+        <div id="newBarberClaimCode" class="barber-claim-code" hidden aria-live="polite"></div>
+      </form>
+      <form id="barberClaimCodeForm" class="barber-form barber-manage-card">
+        <h3>ربط حلاق موجود بحسابه</h3>
+        <label>الصالون<select id="claimShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <label>الحلاق<select id="claimBarberSelect" required><option value="">اختار الحلاق</option></select></label>
+        <button class="barber-button barber-button-light" type="submit">إنشاء كود ربط جديد</button>
+        <div id="existingBarberClaimCode" class="barber-claim-code" hidden aria-live="polite"></div>
+      </form>
+      <form id="updateScheduleForm" class="barber-form barber-manage-card">
+        <h3>مواعيد العمل والإجازات</h3>
+        <label>الصالون<select id="scheduleShopSelect" required><option value="">اختار صالونك</option></select></label>
+        <div class="barber-form-grid">
+          <label>يفتح الساعة<input id="scheduleOpenTime" name="openTime" type="time" required></label>
+          <label>يقفل الساعة<input id="scheduleCloseTime" name="closeTime" type="time" required></label>
+        </div>
+        <fieldset class="barber-days"><legend>أيام الإجازة</legend>
+          <label><input type="checkbox" name="closedDays" value="0"> الأحد</label>
+          <label><input type="checkbox" name="closedDays" value="1"> الاثنين</label>
+          <label><input type="checkbox" name="closedDays" value="2"> الثلاثاء</label>
+          <label><input type="checkbox" name="closedDays" value="3"> الأربعاء</label>
+          <label><input type="checkbox" name="closedDays" value="4"> الخميس</label>
+          <label><input type="checkbox" name="closedDays" value="5"> الجمعة</label>
+          <label><input type="checkbox" name="closedDays" value="6"> السبت</label>
+        </fieldset>
+        <label class="barber-wide">إجازات استثنائية للصالون (كل تاريخ في سطر بصيغة YYYY-MM-DD)<textarea name="closedDatesText" rows="3" maxlength="1319" placeholder="2026-12-01&#10;2026-12-15"></textarea></label>
+        <p class="barber-muted barber-small">في التواريخ دي الصالون كله هيكون مغلق، ومش هيظهر أي موعد للحجز. اترك الحقل فارغًا لمسح الإجازات. مسموح حتى 120 تاريخًا.</p>
+        <button class="barber-button barber-button-primary" type="submit">حفظ مواعيد العمل</button>
+      </form>
+    </div>
+    <p class="barber-muted barber-small">مواعيد الصالون هي المواعيد الافتراضية فقط. بعد ربط حساب كل حلاق بكود الربط، يستطيع الحلاق ضبط أيامه وساعاته بنفسه من صفحة «مواعيدي كحلاق». يظل الدفع نقدًا داخل الصالون، والتقييم العام لكل حلاق يظهر للعملاء.</p>
+  </section>
+
+  <section id="signInPrompt" class="barber-signin" hidden>
+    <div><h2>عندك صالون؟ أو عايز تتابع حجوزاتك؟</h2><p>سجّل دخولك لإتمام الحجز أو إضافة صالون وإدارة مواعيده.</p></div>
+    <a class="barber-button barber-button-primary" href="/login?redirect=%2Fbarbers">دخول / تسجيل</a>
+  </section>
+</main>
+
+<footer class="barber-footer"><a href="/">ElaWamy</a><span>حجز صالونات الحلاقة الرجالي</span><a href="/support">الدعم الفني</a></footer>
+<script type="module" src="/js/barbers.js"></script>
+</body>
+</html>

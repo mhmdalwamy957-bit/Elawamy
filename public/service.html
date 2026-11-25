@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <meta
+    name="description"
+    content="تفاصيل الخدمة على ElaWamy"
+  >
+
+  <title>تفاصيل الخدمة | ElaWamy</title>
+
+  <link rel="stylesheet" href="/css/style.css">
+<script type="application/ld+json" id="serviceStructuredData">{}</script>
+</head>
+
+<body>
+
+<header>
+
+  <a class="logo" href="/">
+    ElaWamy
+  </a>
+
+  <nav>
+    <a href="/">الرئيسية</a>
+    <a href="/add-service">أضف خدمة</a>
+    <a href="/seller-dashboard">لوحة البائع</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/profile">حسابي</a>
+      <a href="/support">الدعم الفني</a>
+  </nav>
+
+</header>
+
+
+<main>
+
+  <!-- Service details -->
+  <section
+    id="service"
+    class="detail"
+  >
+
+    <div class="empty">
+      جاري تحميل الخدمة...
+    </div>
+
+  </section>
+
+
+  <!-- Reviews -->
+  <section
+    id="reviews"
+    class="detail reviews-section"
+    hidden
+  >
+
+    <div class="section-heading">
+
+      <div>
+        <h2>تقييمات المشترين</h2>
+
+        <p>
+          آراء العملاء الذين اشتروا هذه الخدمة
+        </p>
+      </div>
+
+    </div>
+
+
+    <div id="reviewsList">
+
+      <div class="empty">
+        جاري تحميل التقييمات...
+      </div>
+
+    </div>
+
+
+    <!-- Review form -->
+    <div
+      id="reviewForm"
+      class="review-form"
+      hidden
+    >
+
+      <h3>
+        قيّم الخدمة
+      </h3>
+
+      <p class="muted">
+        يمكنك تقييم الخدمة بعد اكتمال طلبك.
+      </p>
+
+      <select id="reviewRating">
+
+        <option value="5">
+          ⭐⭐⭐⭐⭐ — ممتاز
+        </option>
+
+        <option value="4">
+          ⭐⭐⭐⭐ — جيد جدًا
+        </option>
+
+        <option value="3">
+          ⭐⭐⭐ — جيد
+        </option>
+
+        <option value="2">
+          ⭐⭐ — مقبول
+        </option>
+
+        <option value="1">
+          ⭐ — ضعيف
+        </option>
+
+      </select>
+
+
+      <textarea
+        id="reviewText"
+        maxlength="2000"
+        placeholder="اكتب رأيك في الخدمة (اختياري)"
+      ></textarea>
+
+
+      <button
+        id="reviewBtn"
+        class="btn"
+        type="button"
+      >
+        إرسال التقييم
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <p id="message"></p>
+
+</main>
+
+
+<footer>
+
+  <div>
+    <strong>ElaWamy</strong>
+
+    <p>
+      سوق الخدمات العربية
+    </p>
+  </div>
+
+
+  <div class="footer-links">
+
+    <a href="/">
+      الرئيسية
+    </a>
+
+    <a href="/add-service">
+      أضف خدمة
+    </a>
+
+    <a href="/orders">
+      الطلبات
+    </a>
+
+    <a href="/profile">
+      حسابي
+    </a>
+
+  </div>
+
+</footer>
+
+
+<script
+  type="module"
+  src="/js/service.js?v=3"
+></script>
+
+<script type="module" src="/js/notifications.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script><script type="module" src="/js/service-enhancer.js"></script></body>
+</html>

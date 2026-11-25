@@ -1,0 +1,20 @@
+{
+  "name": "elawamy-firebase-market",
+  "version": "1.7.1",
+  "private": true,
+  "type": "module",
+  "description": "ElaWamy marketplace with Firebase Authentication, Firestore and Hosting",
+  "scripts": {
+    "check": "node scripts/check-project.cjs",
+    "deploy": "firebase deploy",
+    "test:barber": "node scripts/check-barber-booking.cjs && node scripts/test-barber-whatsapp.cjs && node scripts/test-barber-finance.cjs && node scripts/test-barber-closed-dates.cjs",
+    "test:barber:local": "node scripts/test-barber-booking-local.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^9.1.0",
+    "firebase-admin": "^14.3.0"
+  }
+}

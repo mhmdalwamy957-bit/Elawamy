@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="تصفح خدمات ElaWamy حسب التصنيف">
+  <meta name="theme-color" content="#15947f">
+  <title>تصنيف الخدمات | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="home-marketplace category-page">
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/" aria-label="ElaWamy">ElaWamy</a>
+    <button id="mobileMenu" class="mobile-menu-btn" type="button" aria-label="فتح القائمة" aria-expanded="false">☰</button>
+    <nav id="mainNav">
+      <a href="/">الرئيسية</a>
+      <a href="/#services">الخدمات</a>
+      <a href="/add-service" data-add-service>أضف خدمة</a>
+      <a href="/orders" data-auth hidden>الطلبات</a>
+      <a href="/buyer-dashboard" data-auth hidden>لوحة المشتري</a>
+      <a href="/favorites" data-auth hidden>المفضلة ♥</a>
+      <a href="/profile" data-auth hidden>حسابي</a>
+      <a href="/seller-dashboard" data-auth data-seller-dashboard hidden>لوحة البائع</a>
+      <a href="/wallet" data-auth hidden>💰 أرباحي</a>
+      <a href="/support">الدعم الفني</a>
+      <a href="/login?redirect=%2Fcategory" data-guest class="header-login">دخول / تسجيل</a>
+      <button id="logout" class="link-btn" data-auth hidden type="button">خروج</button>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="hero hero-market category-hero">
+    <div class="hero-content">
+      <span class="badge">تصنيف ElaWamy</span>
+      <h1 id="categoryTitle">تصفح الخدمات</h1>
+      <p id="categoryDescription">اكتشف خدمات موثوقة، وقارن السعر والتقييم ومدة التسليم قبل الطلب.</p>
+    </div>
+  </section>
+
+  <section class="home-section home-search">
+    <div class="market-search-box">
+      <div class="search-title">
+        <h2>ابحث داخل الخدمات</h2>
+        <p>استخدم البحث والفلاتر للوصول للخدمة المناسبة.</p>
+      </div>
+      <div class="toolbar">
+        <div class="search-field">
+          <span aria-hidden="true">🔎</span>
+          <input id="search" type="search" placeholder="مثال: تصميم شعار، برمجة موقع..." autocomplete="off" aria-label="البحث عن خدمة">
+        </div>
+        <select id="category" aria-label="اختيار التصنيف"><option value="">كل التصنيفات</option></select>
+        <select id="sort" aria-label="ترتيب الخدمات">
+          <option value="latest">الأحدث</option>
+          <option value="rating">الأعلى تقييمًا</option>
+          <option value="price-low">السعر من الأقل للأعلى</option>
+          <option value="price-high">السعر من الأعلى للأقل</option>
+          <option value="delivery-fast">الأسرع تسليمًا</option>
+        </select>
+      </div>
+      <div class="advanced-filters" aria-label="فلاتر متقدمة">
+        <label><span>أقل سعر</span><input id="minPrice" type="number" min="0" max="100000" step="1" placeholder="50" inputmode="numeric"></label>
+        <label><span>أعلى سعر</span><input id="maxPrice" type="number" min="0" max="100000" step="1" placeholder="500" inputmode="numeric"></label>
+        <label><span>مدة التسليم</span><select id="maxDelivery"><option value="">أي مدة</option><option value="1">يوم واحد</option><option value="3">حتى 3 أيام</option><option value="7">حتى أسبوع</option><option value="14">حتى أسبوعين</option><option value="30">حتى 30 يومًا</option></select></label>
+        <label><span>التقييم</span><select id="minRating"><option value="">أي تقييم</option><option value="4">4 نجوم فأعلى</option><option value="4.5">4.5 نجوم فأعلى</option><option value="5">5 نجوم</option></select></label>
+        <button type="button" class="clear-filters-btn standalone" id="clearAllFilters">مسح الفلاتر</button>
+      </div>
+      <div id="activeFilters" class="active-filters" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="services" class="home-section">
+    <div class="market-section-title">
+      <div>
+        <h2>الخدمات</h2>
+        <p>خدمات متاحة للطلب في هذا التصنيف</p>
+      </div>
+      <strong id="resultCount" class="result-count">0 خدمة</strong>
+    </div>
+    <div id="servicesGrid" class="grid"><div class="empty">جاري تحميل الخدمات...</div></div>
+  </section>
+</main>
+<script type="module" src="/js/category-page.js"></script>
+<script type="module" src="/js/app.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script><script type="module">import { loadCategories } from "/js/category-source.js"; loadCategories("category");</script></body>
+</html>

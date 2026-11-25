@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>لوحة الإدارة | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">ElaWamy</a>
+  <nav>
+    <a href="/">الخدمات</a>
+    <a href="/seller-dashboard">لوحة البائع</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/support">الدعم الفني</a>
+    <a href="/wallet">أرباحي</a><a href="/messages">الرسائل</a><a href="/offers">العروض</a>
+  </nav>
+</header>
+
+<main>
+  <section class="box wide">
+    <h1>لوحة الإدارة</h1>
+    <p class="muted" id="adminStatus">جاري التحقق من صلاحيات الأدمن...</p>
+
+    <div id="adminPanel" hidden>
+      <div class="admin-tabs">
+        <button class="btn admin-tab active" type="button" data-section="pending">
+          🛍️ الخدمات قيد المراجعة
+        </button>
+        <button class="btn secondary admin-tab" type="button" data-section="barber-shops">
+          ✂️ طلبات صالونات الحلاقة
+        </button>
+        <button class="btn secondary admin-tab" type="button" data-section="withdrawals">
+          💰 طلبات السحب
+        </button>
+        <button class="btn secondary admin-tab" type="button" data-section="platform-fees">🧾 عمولات العوامي</button>
+        <button class="btn secondary admin-tab" type="button" data-section="disputes">⚠️ النزاعات</button><button class="btn secondary admin-tab" type="button" data-section="users">👥 المستخدمون</button><button class="btn secondary admin-tab" type="button" data-section="orders">📦 الطلبات</button><button class="btn secondary admin-tab" type="button" data-section="offers">🤝 العروض</button>
+        <button class="btn secondary admin-tab" type="button" data-section="about">
+          ℹ️ الحالة
+        </button>
+      </div>
+
+      <section id="admin-pending" class="admin-section">
+        <div class="admin-section-head">
+          <h2>الخدمات قيد المراجعة</h2>
+          <button class="btn small" id="refreshServices" type="button">تحديث</button>
+        </div>
+
+        <div id="pendingServices">
+          <p class="muted">جاري تحميل الخدمات...</p>
+        </div>
+      </section>
+
+      <section id="admin-barber-shops" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>طلبات صالونات الحلاقة</h2>
+          <button class="btn small" id="refreshBarberShops" type="button">تحديث</button>
+        </div>
+        <p class="muted">الصالونات الجديدة لا تظهر للعملاء حتى يعتمدها الأدمن. عند الرفض اكتب سببًا واضحًا لصاحب الطلب.</p>
+        <div id="adminBarberShops"><p class="muted">جاري تحميل طلبات الصالونات...</p></div>
+      </section>
+
+      <section id="admin-withdrawals" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>طلبات السحب</h2>
+          <button class="btn small" id="refreshWithdrawals" type="button">تحديث</button>
+        </div>
+        <div id="withdrawalRequests">
+          <p class="muted">جاري تحميل طلبات السحب...</p>
+        </div>
+      </section>
+
+      <section id="admin-platform-fees" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>عمولات العوامي المستحقة</h2>
+          <button class="btn small" id="refreshPlatformFees" type="button">تحديث</button>
+        </div>
+        <p class="muted">في الدفع المباشر، يدفع المشتري للبائع مباشرة، وتظهر عمولة 7% هنا كسداد يدوي مستحق على البائع.</p>
+        <div id="platformFeeRequests"><p class="muted">جاري تحميل العمولات...</p></div>
+      </section>
+
+      <section id="admin-disputes" class="admin-section" hidden>
+        <div class="admin-section-head">
+          <h2>النزاعات</h2>
+          <button class="btn small" id="refreshDisputes" type="button">تحديث</button>
+        </div>
+        <div id="adminDisputesList"><p class="muted">جاري تحميل النزاعات...</p></div>
+      </section>
+
+      <section id="admin-users" class="admin-section" hidden><div class="admin-section-head"><h2>المستخدمون</h2><button class="btn small" id="refreshUsers" type="button">تحديث</button></div><div id="adminUsersList"><p class="muted">جاري تحميل المستخدمين...</p></div></section><section id="admin-orders" class="admin-section" hidden><div class="admin-section-head"><h2>الطلبات</h2><button class="btn small" id="refreshOrders" type="button">تحديث</button></div><div id="adminOrdersList"><p class="muted">جاري تحميل الطلبات...</p></div></section><section id="admin-offers" class="admin-section" hidden><div class="admin-section-head"><h2>العروض المخصصة</h2><button class="btn small" id="refreshOffers" type="button">تحديث</button></div><div id="adminOffersList"><p class="muted">جاري تحميل العروض...</p></div></section><section id="admin-about" class="admin-section" hidden>
+        <div class="card" style="padding:20px">
+          <h2>مركز التحكم في ElaWamy</h2>
+          <p>
+            من هنا يدير الأدمن الخدمات والمستخدمين والطلبات والعروض والسحوبات والنزاعات.
+          </p>
+          <p class="muted">
+            الاعتماد والرفض متاحان لحساب يحمل Custom Claim باسم
+            <code>admin: true</code>.
+          </p>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<div id="adminUserDetailsModal" class="admin-user-modal" hidden>
+  <div class="admin-user-modal-backdrop" data-close-user-details></div>
+  <section class="admin-user-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="adminUserDetailsTitle">
+    <div class="admin-user-modal-head">
+      <h2 id="adminUserDetailsTitle">تفاصيل الحساب</h2>
+      <button class="btn small secondary" id="closeAdminUserDetails" type="button">إغلاق</button>
+    </div>
+    <div id="adminUserDetailsBody" class="admin-user-modal-body">
+      <div class="user-detail-loading">جاري التحميل...</div>
+    </div>
+  </section>
+</div>
+
+<style>
+  body.admin-modal-open { overflow: hidden; }
+  .admin-user-modal[hidden] { display: none !important; }
+  .admin-user-modal { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 18px; }
+  .admin-user-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.62); }
+  .admin-user-modal-dialog { position: relative; width: min(1100px, 96vw); max-height: 92vh; overflow: hidden; background: var(--card, #fff); border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.3); display: flex; flex-direction: column; }
+  .admin-user-modal-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid rgba(0,0,0,.08); }
+  .admin-user-modal-head h2 { margin:0; }
+  .admin-user-modal-body { overflow:auto; padding:20px; }
+  .admin-user-card:hover { transform: translateY(-1px); }
+  .user-detail-hero { display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; padding:16px; border:1px solid rgba(0,0,0,.08); border-radius:14px; margin-bottom:16px; }
+  .user-detail-hero h3 { margin:0 0 6px; }
+  .user-detail-badges { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start; }
+  .user-detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; padding:14px; border:1px solid rgba(0,0,0,.08); border-radius:14px; margin-bottom:16px; }
+  .user-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:18px; }
+  .user-stat { border:1px solid rgba(0,0,0,.08); border-radius:12px; padding:12px; background:rgba(0,0,0,.02); }
+  .user-stat span { display:block; font-size:12px; opacity:.7; margin-bottom:5px; word-break:break-word; }
+  .user-stat strong { font-size:18px; }
+  .user-detail-heading { margin:20px 0 10px; }
+  .user-detail-block { border:1px solid rgba(0,0,0,.08); border-radius:12px; margin:10px 0; overflow:hidden; }
+  .user-detail-block summary { cursor:pointer; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; list-style:none; }
+  .user-detail-count { min-width:28px; text-align:center; border-radius:999px; padding:2px 8px; background:rgba(0,0,0,.07); }
+  .user-detail-json { margin:0; padding:14px; border-top:1px solid rgba(0,0,0,.07); white-space:pre-wrap; word-break:break-word; font-size:12px; direction:ltr; text-align:left; max-height:360px; overflow:auto; background:rgba(0,0,0,.025); }
+  .user-detail-loading { padding:30px; text-align:center; }
+  .user-controls-panel { padding:16px; border:1px solid rgba(0,0,0,.08); border-radius:14px; margin:16px 0; }
+  .user-controls-head h3 { margin:0 0 6px; }
+  .user-controls-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin:14px 0; }
+  .user-control-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 12px; border:1px solid rgba(0,0,0,.06); border-radius:10px; }
+  .user-control-select { min-width:96px; padding:6px 8px; border-radius:8px; }
+  .user-controls-reason { display:block; margin-top:12px; }
+  .user-controls-reason span { display:block; margin-bottom:6px; font-weight:600; }
+  .user-controls-reason textarea { width:100%; min-height:80px; padding:10px; border:1px solid rgba(0,0,0,.12); border-radius:10px; resize:vertical; box-sizing:border-box; }
+  .user-controls-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; }
+  @media (max-width:700px) {
+    .admin-user-modal { padding:8px; }
+    .admin-user-modal-dialog { width:100%; max-height:96vh; border-radius:14px; }
+    .admin-user-modal-body { padding:12px; }
+  }
+</style>
+
+
+<script type="module" src="/js/admin.js?v=20261018-barber-approval-01"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script><script type="module" src="/js/admin-v6.js"></script><script>document.getElementById('closeAdminUserDetails')?.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('close-admin-user-details')));document.querySelector('[data-close-user-details]')?.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('close-admin-user-details')));window.addEventListener('close-admin-user-details',()=>{const m=document.getElementById('adminUserDetailsModal');if(m){m.hidden=true;document.body.classList.remove('admin-modal-open');}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=document.getElementById('adminUserDetailsModal');if(m&&!m.hidden){m.hidden=true;document.body.classList.remove('admin-modal-open');}}});</script></body>
+</html>
