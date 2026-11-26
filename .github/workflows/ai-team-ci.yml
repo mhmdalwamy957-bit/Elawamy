@@ -1,0 +1,57 @@
+name: ElaWamy AI Team CI
+
+on:
+  push:
+    branches:
+      - ai-team-bootstrap-20261125
+  pull_request:
+    branches:
+      - ai-team-bootstrap-20261125
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-team-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Project and AI Team Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install server dependencies
+        run: npm ci --prefix server
+
+      - name: Check project
+        run: npm run check
+
+      - name: Test AI Team
+        run: npm run test:ai-team
+
+      - name: Test barber system
+        run: npm run test:barber
+
+      - name: Check server syntax
+        run: |
+          node --check server/server.js
+          node --check server/ai-team-github.js
