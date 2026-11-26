@@ -17,10 +17,18 @@
     <section class="team-head">
       <p class="team-muted">لوحة الأدمن — فريق العوامي الذكي</p>
       <h1>فريق تطوير الموقع والتطبيق</h1>
-      <p class="team-muted">اكتب مهمة تطوير، وسيعد الفريق تقريرًا مشتركًا. أي تقرير ينتظر قرارك. الموافقة تسجل اعتماد المقترح للتنفيذ اليدوي فقط ولا تنشر كودًا أو تغيّر بيانات الإنتاج.</p>
+      <p class="team-muted">الفريق يقرأ فهرس المستودع ويحمّل الملفات النصية الأكثر ارتباطًا بكل مهمة، ثم يراجعها عبر 8 مجموعات تضم 40 دورًا تخصصيًا. موافقتك تنشئ فرعًا مستقلًا وPull Request مسودة فقط؛ لا يوجد دمج أو نشر تلقائي.</p>
       <div id="teamAuthStatus" class="team-status" role="status">جارٍ التحقق من صلاحية الأدمن…</div>
-      <div class="team-roles" aria-label="تخصصات الفريق">
-        <div class="team-role">مهندس المعمارية</div><div class="team-role">مطور الموقع</div><div class="team-role">مطور التطبيق</div><div class="team-role">مطور الخادم</div><div class="team-role">مهندس Firebase</div><div class="team-role">خبير الأمان</div><div class="team-role">مختبر الجودة</div><div class="team-role">مسؤول النشر</div>
+      <div id="teamGithubStatus" class="team-status" role="status">جارٍ التحقق من اتصال GitHub…</div>
+      <div class="team-roles" aria-label="المجموعات الأربعون للفريق">
+        <div class="team-role"><strong>المعمارية وتحليل المنتج</strong><br><span>مهندس الحلول • محلل المنتج • محلل العمليات • مصمم تدفق البيانات • باحث تجربة المستخدم</span></div>
+        <div class="team-role"><strong>تطوير واجهات الموقع</strong><br><span>مهندس الواجهات • HTML وCSS • JavaScript • الوصول • أداء الويب</span></div>
+        <div class="team-role"><strong>تطوير تطبيق الهاتف</strong><br><span>Expo • Android • iOS • PWA • تجربة الهاتف</span></div>
+        <div class="team-role"><strong>الخادم وواجهات API</strong><br><span>Node.js • عقود API • التكاملات • المهام الخلفية • موثوقية الخادم</span></div>
+        <div class="team-role"><strong>Firebase والبيانات</strong><br><span>المصادقة • Firestore • قواعد البيانات • الفهارس • التخزين</span></div>
+        <div class="team-role"><strong>الأمان والخصوصية</strong><br><span>تحليل التهديدات • الأسرار • التحقق • الخصوصية • منع الإساءة</span></div>
+        <div class="team-role"><strong>الجودة والاختبارات</strong><br><span>استراتيجية الاختبار • الوحدات • التكامل • E2E • الانحدار</span></div>
+        <div class="team-role"><strong>التشغيل والإصدار</strong><br><span>Vercel • Firebase Hosting • CI/CD • المراقبة • التراجع</span></div>
       </div>
     </section>
     <section class="team-panel">
@@ -30,7 +38,7 @@
         <textarea id="teamTaskInput" maxlength="5000" placeholder="مثال: راجع طريقة تسجيل الدخول الموحد بين الموقع وتطبيق Android واقترح خطة آمنة…" required disabled></textarea>
         <div class="team-row"><button id="teamRunButton" class="team-button" type="submit" disabled>شغّل فريق التطوير</button><button id="teamRefreshButton" class="team-button secondary" type="button" disabled>تحديث المهام</button></div>
       </form>
-      <p class="team-muted">لا تضع كلمات مرور أو مفاتيح API أو بيانات عملاء في وصف المهمة. قد يُرسل التقرير إلى مراجع مجاني خارجي عند تفعيله، ويُستخدم Gemini كبديل عند عدم توفره.</p>
+      <p class="team-muted">لا تضع كلمات مرور أو مفاتيح API أو بيانات عملاء في وصف المهمة. يظل Gemini هو المنسق، وقد يستخدم OpenRouter المجاني للمراجعة الثانية عند توفره. إنشاء Pull Request لا يعني تشغيل الاختبارات أو الدمج أو النشر؛ يلزم فحص الـ PR قبل أي اعتماد نهائي.</p>
       <div id="teamNewResult" class="team-hidden"></div>
     </section>
     <section class="team-panel">

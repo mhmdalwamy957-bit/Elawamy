@@ -8,7 +8,8 @@
     "check": "node scripts/check-project.cjs",
     "deploy": "firebase deploy",
     "test:barber": "node scripts/check-barber-booking.cjs && node scripts/test-barber-whatsapp.cjs && node scripts/test-barber-finance.cjs && node scripts/test-barber-closed-dates.cjs && node scripts/test-public-rate-limit.cjs",
-    "test:barber:local": "node scripts/test-barber-booking-local.cjs"
+    "test:barber:local": "node scripts/test-barber-booking-local.cjs",
+    "test:ai-team": "node scripts/test-ai-team-github.cjs"
   },
   "engines": {
     "node": ">=18"
