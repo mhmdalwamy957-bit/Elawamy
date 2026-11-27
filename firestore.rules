@@ -1,0 +1,1364 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownService() {
+      return signedIn()
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    function isSupportAgent() {
+      return signedIn()
+        && request.auth.token.supportAgent == true;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.admin == true;
+    }
+
+    // Referral attribution must point to a real affiliate profile whose saved code matches.
+    function validAffiliateReferrer(referrerId, code) {
+      return exists(/databases/$(database)/documents/affiliateProfiles/$(referrerId))
+        && get(/databases/$(database)/documents/affiliateProfiles/$(referrerId)).data.userId == referrerId
+        && get(/databases/$(database)/documents/affiliateProfiles/$(referrerId)).data.code == code;
+    }
+
+    function featureEnabled(feature) {
+      return signedIn()
+        && (
+          isAdmin()
+          || !exists(/databases/$(database)/documents/userControls/$(request.auth.uid))
+          || !get(/databases/$(database)/documents/userControls/$(request.auth.uid)).data.get('disabledFeatures', []).hasAny([feature])
+        );
+    }
+
+    // Personal registration details stay separate from public seller profiles.
+    function validPrivateUserDetails(data) {
+      return data.keys().hasOnly([
+          'fullName',
+          'birthDate',
+          'preferredPaymentMethod',
+          'updatedAt'
+        ])
+        && data.keys().hasAll([
+          'fullName',
+          'birthDate',
+          'preferredPaymentMethod',
+          'updatedAt'
+        ])
+        && data.fullName is string
+        && data.fullName.size() >= 8
+        && data.fullName.size() <= 160
+        && data.fullName.matches('^[^ ]+( [^ ]+){3,}$')
+        && data.birthDate is string
+        && data.birthDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.preferredPaymentMethod in ['vodafone_cash', 'instapay', 'ewallet', 'bank']
+        && data.updatedAt is timestamp;
+    }
+
+      function validService(data) {
+        return data.name is string
+          && data.name.size() >= 3
+          && data.name.size() <= 80
+          && data.description is string
+          && data.description.size() >= 10
+          && data.description.size() <= 1200
+          && data.category is string
+          && data.category.size() > 0
+          && data.category.size() <= 60
+          && data.price is number
+          && data.price >= 1
+          && data.price <= 100000
+          && data.deliveryDays is number
+          && data.deliveryDays >= 1
+          && data.deliveryDays <= 90
+          && data.imageUrl is string
+          && data.imageUrl.size() <= 2048
+          && (
+            data.imageUrl == ''
+            || data.imageUrl.matches('https://.*')
+          )
+          && data.tags is list
+          && data.tags.size() <= 10
+          && data.requirements is list
+          && data.requirements.size() <= 20
+          && data.extras is list
+          && data.extras.size() <= 10
+          && data.faq is list
+          && data.faq.size() <= 20
+          && data.instructions is string
+          && data.instructions.size() <= 2000;
+      }
+
+    match /services/{serviceId} {
+      allow read: if resource.data.status == 'approved'
+        || (signedIn() && resource.data.ownerId == request.auth.uid)
+        || isAdmin()
+        || isSupportAgent();
+
+      allow create: if signedIn()
+        && featureEnabled('selling')
+        && featureEnabled('createService')
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'description',
+          'category',
+          'price',
+          'rating',
+          'ratingCount',
+          'deliveryDays',
+          'imageUrl',
+            'tags',
+            'requirements',
+            'extras',
+            'faq',
+            'instructions',
+          'ownerId',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.rating == 0
+        && request.resource.data.ratingCount == 0
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && validService(request.resource.data);
+
+      // البائع يعدّل بيانات خدمته فقط.
+      // أي تعديل على خدمة منشورة أو مرفوضة يعيدها للمراجعة.
+      allow update: if ownService()
+        && featureEnabled('selling')
+        && featureEnabled('editService')
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingCount == resource.data.ratingCount
+        && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+            'tags',
+            'requirements',
+            'extras',
+            'faq',
+            'instructions',
+          'description',
+          'category',
+          'price',
+          'deliveryDays',
+          'imageUrl',
+          'status',
+          'updatedAt'
+        ])
+        && request.resource.data.updatedAt is timestamp
+        && validService(request.resource.data);
+
+      // الأدمن يدير دورة حياة الخدمة.
+      allow update: if isAdmin()
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingCount == resource.data.ratingCount
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+        && request.resource.data.status in ['approved','rejected','suspended','pending']
+        && request.resource.data.updatedAt is timestamp;
+
+      // الأدمن وحده يغيّر حالة الخدمة أثناء المراجعة.
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingCount == resource.data.ratingCount
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'updatedAt'
+        ])
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.updatedAt is timestamp;
+
+
+
+      // البائع يستطيع إيقاف الخدمة مؤقتًا أو إعادة تفعيلها دون تعديل المحتوى.
+      allow update: if ownService()
+        && featureEnabled('selling')
+        && featureEnabled('serviceStatus')
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingCount == resource.data.ratingCount
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+        && resource.data.status in ['approved','paused']
+        && request.resource.data.status in ['approved','paused']
+        && request.resource.data.updatedAt is timestamp;
+
+      // الأدمن يستطيع تمييز الخدمة أو إلغاء تمييزها.
+      allow update: if isAdmin()
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingCount == resource.data.ratingCount
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['featured','featuredUntil','updatedAt'])
+        && request.resource.data.featured is bool
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if false;
+    }
+
+    match /userControls/{userId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'disabledFeatures',
+          'reason',
+          'updatedBy',
+          'updatedAt'
+        ])
+        && request.resource.data.disabledFeatures is list
+        && request.resource.data.disabledFeatures.size() <= 30
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 500
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedAt is timestamp;
+      allow delete: if isAdmin();
+    }
+
+    match /privateUserDetails/{userId} {
+      // Only the account owner and an administrator may read these personal details.
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && validPrivateUserDetails(request.resource.data);
+
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'fullName',
+          'birthDate',
+          'preferredPaymentMethod',
+          'updatedAt'
+        ])
+        && validPrivateUserDetails(request.resource.data);
+
+      allow delete: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if isAdmin() || (signedIn() && (request.auth.uid == userId || isSupportAgent()));
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && featureEnabled('profileEdit')
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'bio',
+          'email',
+          'headline',
+          'portfolioUrl',
+          'status',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 500
+        && request.resource.data.email is string
+        && request.auth.token.email is string
+        && request.resource.data.email == request.auth.token.email
+        && (!request.resource.data.keys().hasAny(['headline']) || request.resource.data.headline is string)
+          && (!request.resource.data.keys().hasAny(['portfolioUrl']) || request.resource.data.portfolioUrl == '' || request.resource.data.portfolioUrl.matches('^https://.+'))
+        && (!request.resource.data.keys().hasAny(['status']) || request.resource.data.status == 'active')
+        && request.resource.data.updatedAt is timestamp;
+
+      // The account owner cannot change their own moderation status.
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && featureEnabled('profileEdit')
+        && resource.data.get('status', 'active') == 'active'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'bio',
+          'email',
+          'headline',
+          'portfolioUrl',
+          'status',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 500
+        && request.resource.data.email is string
+        && request.auth.token.email is string
+        && request.resource.data.email == request.auth.token.email
+        && (!request.resource.data.keys().hasAny(['headline']) || request.resource.data.headline is string)
+        && (!request.resource.data.keys().hasAny(['portfolioUrl']) || request.resource.data.portfolioUrl == '' || request.resource.data.portfolioUrl.matches('^https://.+'))
+        && request.resource.data.get('status', 'active') == resource.data.get('status', 'active')
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+        && request.resource.data.status in ['active','blocked']
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if false;
+    }
+
+    match /sellerProfiles/{userId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && featureEnabled('profileEdit')
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'bio',
+          'headline',
+          'portfolioUrl',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 500
+        && (!request.resource.data.keys().hasAny(['headline']) || request.resource.data.headline is string)
+        && (!request.resource.data.keys().hasAny(['portfolioUrl']) || request.resource.data.portfolioUrl == '' || request.resource.data.portfolioUrl.matches('^https://.+'))
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && featureEnabled('profileEdit')
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'bio',
+          'headline',
+          'portfolioUrl',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 500
+        && (!request.resource.data.keys().hasAny(['headline']) || request.resource.data.headline is string)
+        && (!request.resource.data.keys().hasAny(['portfolioUrl']) || request.resource.data.portfolioUrl == '' || request.resource.data.portfolioUrl.matches('^https://.+'))
+        && request.resource.data.updatedAt is timestamp;
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['verified','updatedAt'])
+        && request.resource.data.verified is bool
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verified','level','updatedAt'])
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if false;
+    }
+
+
+    match /sellerPaymentProfiles/{userId} {
+      allow read: if signedIn()
+        && featureEnabled('paymentProfile')
+        && (request.auth.uid == userId || isAdmin());
+
+      allow create, update: if signedIn()
+        && featureEnabled('paymentProfile')
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'method',
+          'account',
+          'accountName',
+          'updatedAt'
+        ])
+        && request.resource.data.method == 'vodafone_cash'
+        && request.resource.data.account is string
+        && request.resource.data.account.matches('01[0-9]{9}')
+        && request.resource.data.accountName is string
+        && request.resource.data.accountName.size() >= 1
+        && request.resource.data.accountName.size() <= 100
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if false;
+    }
+
+    match /sellerProfiles/{userId}/portfolio/{itemId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && featureEnabled('portfolio')
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'title',
+          'description',
+          'imageUrl',
+          'link',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 1
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.imageUrl is string
+        && request.resource.data.imageUrl.size() <= 2048
+        && (request.resource.data.imageUrl == '' || request.resource.data.imageUrl.matches('^https://.+'))
+        && request.resource.data.link is string
+        && request.resource.data.link.size() <= 2048
+        && (request.resource.data.link == '' || request.resource.data.link.matches('^https://.+'))
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if signedIn()
+        && featureEnabled('portfolio')
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'title',
+          'description',
+          'imageUrl',
+          'link',
+          'updatedAt'
+        ])
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 1
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.imageUrl is string
+        && request.resource.data.imageUrl.size() <= 2048
+        && (request.resource.data.imageUrl == '' || request.resource.data.imageUrl.matches('^https://.+'))
+        && request.resource.data.link is string
+        && request.resource.data.link.size() <= 2048
+        && (request.resource.data.link == '' || request.resource.data.link.matches('^https://.+'))
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if signedIn()
+        && featureEnabled('portfolio')
+        && request.auth.uid == userId;
+    }
+
+
+    match /orders/{orderId} {
+      allow create: if false;
+
+      allow read: if signedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || resource.data.sellerId == request.auth.uid
+          || isSupportAgent()
+          || isAdmin()
+        );
+
+      allow update: if signedIn()
+        && featureEnabled('orderActions')
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.serviceId == resource.data.serviceId
+        && request.resource.data.price == resource.data.price
+        && request.resource.data.serviceName == resource.data.serviceName
+        && request.resource.data.paymentStatus == resource.data.paymentStatus
+        && request.resource.data.financeStatus == resource.data.financeStatus
+        && request.resource.data.platformFee == resource.data.platformFee
+        && request.resource.data.sellerNetAmount == resource.data.sellerNetAmount
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status'])
+        && (
+          (
+            resource.data.sellerId == request.auth.uid
+            && resource.data.paymentStatus == 'paid'
+            && resource.data.financeStatus == 'escrowed'
+            && (
+              resource.data.status == 'pending'
+              && request.resource.data.status == 'accepted'
+            )
+          )
+          || (
+            resource.data.userId == request.auth.uid
+            && (
+              (resource.data.status == 'delivered'
+                && request.resource.data.status == 'revision_requested')
+            )
+          )
+        );
+
+      allow delete: if false;
+    }
+
+
+    match /wallets/{userId} {
+      allow read: if signedIn()
+        && featureEnabled('wallet')
+        && (request.auth.uid == userId || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if signedIn()
+        && featureEnabled('wallet')
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow read: if signedIn()
+        && featureEnabled('withdraw')
+        && (resource.data.sellerId == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /orders/{orderId}/files/{fileId} {
+      allow read: if signedIn()
+        && (
+          get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid
+          || get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid
+        );
+
+      allow create: if false
+        && request.resource.data.uploaderId == request.auth.uid
+        && request.resource.data.role is string
+        && (
+          (request.resource.data.role == 'buyer'
+            && get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid)
+          || (request.resource.data.role == 'seller'
+            && get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)
+        )
+        && request.resource.data.path is string
+        && request.resource.data.path.size() > 0
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.contentType is string
+        && request.resource.data.contentType.size() > 0
+        && request.resource.data.size is number
+        && request.resource.data.size > 0
+        && request.resource.data.size <= 52428800;
+
+      allow update: if false;
+
+      allow delete: if signedIn()
+        && featureEnabled('files')
+        && resource.data.uploaderId == request.auth.uid;
+    }
+
+    match /orders/{orderId}/messages/{messageId} {
+      allow read: if signedIn()
+        && (
+          get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid
+          || get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid
+        );
+
+        allow create: if signedIn()
+          && featureEnabled('orderChat')
+          && request.resource.data.keys().hasOnly([
+            'senderId',
+            'text',
+            'createdAt'
+          ])
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt is timestamp
+          && (
+            get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid
+            || get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid
+          );
+
+      allow update, delete: if false;
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && featureEnabled('reviews')
+        && request.resource.data.keys().hasOnly([
+          'serviceId',
+          'orderId',
+          'userId',
+          'rating',
+          'text',
+          'createdAt'
+        ])
+        && reviewId == request.resource.data.orderId + '__' + request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.serviceId is string
+        && request.resource.data.serviceId.size() > 0
+        && request.resource.data.orderId is string
+        && request.resource.data.orderId.size() > 0
+        && request.resource.data.rating is number
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 2000
+        && get(
+          /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+        ).data.userId == request.auth.uid
+        && get(
+          /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+        ).data.serviceId == request.resource.data.serviceId
+        && get(
+          /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+        ).data.status == 'completed'
+        && get(
+          /databases/$(database)/documents/services/$(request.resource.data.serviceId)
+        ).data.ownerId == get(
+          /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+        ).data.sellerId
+;
+
+      allow update, delete: if false;
+    }
+
+    match /disputes/{disputeId} {
+      allow create: if signedIn()
+        && featureEnabled('disputes')
+        && request.resource.data.keys().hasOnly([
+          'orderId',
+          'buyerId',
+          'sellerId',
+          'openedBy',
+          'role',
+          'reason',
+          'description',
+          'evidence',
+          'status',
+          'resolution',
+          'assignedTo',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.orderId is string
+        && request.resource.data.orderId.size() > 0
+        && request.resource.data.buyerId is string
+        && request.resource.data.sellerId is string
+        && request.resource.data.openedBy == request.auth.uid
+        && request.resource.data.role in ['buyer', 'seller']
+        && (
+          (request.resource.data.role == 'buyer'
+            && request.resource.data.buyerId == request.auth.uid)
+          ||
+          (request.resource.data.role == 'seller'
+            && request.resource.data.sellerId == request.auth.uid)
+        )
+        && request.resource.data.buyerId != request.resource.data.sellerId
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 2
+        && request.resource.data.reason.size() <= 80
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.description.size() <= 4000
+        && request.resource.data.evidence is string
+        && request.resource.data.evidence.size() <= 4000
+        && request.resource.data.status == 'open'
+        && request.resource.data.resolution == ''
+        && request.resource.data.assignedTo == ''
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && disputeId == request.resource.data.orderId + '__' + request.auth.uid
+        && exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId))
+        && (
+          request.resource.data.buyerId == get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId
+          && request.resource.data.sellerId == get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.sellerId
+        )
+        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.paymentStatus == 'paid'
+        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status != 'cancelled';
+
+      allow read: if signedIn()
+        && (
+          resource.data.buyerId == request.auth.uid
+          || resource.data.sellerId == request.auth.uid
+          || isSupportAgent()
+          || isAdmin()
+        );
+
+      allow update: if (isSupportAgent() || isAdmin())
+        && request.resource.data.orderId == resource.data.orderId
+        && request.resource.data.buyerId == resource.data.buyerId
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.openedBy == resource.data.openedBy
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.reason == resource.data.reason
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.evidence == resource.data.evidence
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'resolution',
+          'assignedTo',
+          'updatedAt'
+        ])
+        && request.resource.data.status in [
+          'open',
+          'in_review',
+          'resolved_buyer',
+          'resolved_seller',
+          'closed'
+        ]
+        && request.resource.data.resolution is string
+        && request.resource.data.resolution.size() <= 4000
+        && request.resource.data.assignedTo is string
+        && request.resource.data.assignedTo.size() <= 320
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if false;
+    }
+
+    match /disputes/{disputeId}/messages/{messageId} {
+      allow read: if signedIn()
+        && (
+          get(/databases/$(database)/documents/disputes/$(disputeId)).data.buyerId == request.auth.uid
+          || get(/databases/$(database)/documents/disputes/$(disputeId)).data.sellerId == request.auth.uid
+          || isSupportAgent()
+          || isAdmin()
+        );
+
+      allow create: if signedIn()
+        && featureEnabled('disputes')
+        && request.resource.data.keys().hasOnly([
+          'senderId',
+          'text',
+          'createdAt'
+        ])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 1
+        && request.resource.data.text.size() <= 3000
+        && request.resource.data.createdAt is timestamp
+        && (
+          get(/databases/$(database)/documents/disputes/$(disputeId)).data.buyerId == request.auth.uid
+          || get(/databases/$(database)/documents/disputes/$(disputeId)).data.sellerId == request.auth.uid
+          || isSupportAgent()
+          || isAdmin()
+        );
+
+      allow update, delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn()
+        && featureEnabled('notifications')
+        && resource.data.userId == request.auth.uid;
+
+      allow create: if false
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'type',
+          'title',
+          'body',
+          'orderId',
+          'createdAt',
+          'read'
+        ])
+        && request.resource.data.userId is string
+        && request.resource.data.userId.size() > 0
+        && request.resource.data.type is string
+        && request.resource.data.type.size() > 0
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.body is string
+        && request.resource.data.body.size() <= 500
+        && request.resource.data.orderId is string
+        && request.resource.data.orderId.size() > 0
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.read == false
+        && exists(
+          /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+        )
+        && (
+          request.resource.data.userId ==
+            get(
+              /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+            ).data.userId
+          || request.resource.data.userId ==
+            get(
+              /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+            ).data.sellerId
+        )
+        && (
+          request.auth.uid ==
+            get(
+              /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+            ).data.userId
+          || request.auth.uid ==
+            get(
+              /databases/$(database)/documents/orders/$(request.resource.data.orderId)
+            ).data.sellerId
+        );
+
+      allow update: if signedIn()
+        && featureEnabled('notifications')
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.type == resource.data.type
+
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.body == resource.data.body
+        && request.resource.data.orderId == resource.data.orderId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.read is bool;
+
+      allow delete: if signedIn()
+        && featureEnabled('notifications')
+        && resource.data.userId == request.auth.uid;
+    }
+
+    match /favorites/{userId}/services/{serviceId} {
+      allow read: if signedIn()
+        && request.auth.uid == userId;
+
+      allow create: if signedIn()
+        && featureEnabled('favorites')
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'serviceId',
+          'createdAt'
+        ])
+        && request.resource.data.serviceId == serviceId
+        && request.resource.data.createdAt is timestamp
+        && get(/databases/$(database)/documents/services/$(serviceId)).data.status == 'approved';
+
+      allow delete: if signedIn()
+        && featureEnabled('favorites')
+        && request.auth.uid == userId;
+
+      allow update: if false;
+    }
+
+    match /follows/{userId}/sellers/{sellerId} {
+      allow read: if signedIn()
+        && request.auth.uid == userId;
+
+      allow create: if signedIn()
+        && featureEnabled('follow')
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'sellerId',
+          'createdAt'
+        ])
+        && request.resource.data.sellerId == sellerId
+        && request.resource.data.sellerId != request.auth.uid
+        && request.resource.data.createdAt is timestamp
+        && exists(/databases/$(database)/documents/sellerProfiles/$(sellerId));
+
+      allow delete: if signedIn()
+        && featureEnabled('follow')
+        && request.auth.uid == userId;
+
+      allow update: if false;
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isAdmin()
+        || (signedIn() && (
+          resource.data.buyerId == request.auth.uid
+          || resource.data.sellerId == request.auth.uid
+        ));
+
+      allow create: if signedIn()
+        && featureEnabled('chat')
+        && request.resource.data.keys().hasOnly([
+          'buyerId',
+          'sellerId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.buyerId is string
+        && request.resource.data.sellerId is string
+        && request.resource.data.buyerId != request.resource.data.sellerId
+        && (
+          request.auth.uid == request.resource.data.buyerId
+          || request.auth.uid == request.resource.data.sellerId
+        )
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if isAdmin()
+        || (signedIn()
+          && featureEnabled('chat')
+          && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid)
+          && request.resource.data.buyerId == resource.data.buyerId
+          && request.resource.data.sellerId == resource.data.sellerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'lastMessage','lastSenderId','updatedAt','serviceId','serviceName'
+          ])
+          && request.resource.data.updatedAt is timestamp);
+
+      allow delete: if isAdmin();
+    }
+
+    match /conversations/{conversationId}/messages/{messageId} {
+      allow read: if isAdmin()
+        || (signedIn() && (
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data.buyerId == request.auth.uid
+          || get(/databases/$(database)/documents/conversations/$(conversationId)).data.sellerId == request.auth.uid
+        ));
+
+      allow create: if signedIn()
+        && featureEnabled('chat')
+        && request.resource.data.keys().hasOnly([
+          'senderId',
+          'text',
+          'createdAt'
+        ])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 1
+        && request.resource.data.text.size() <= 3000
+        && request.resource.data.createdAt is timestamp
+        && (
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data.buyerId == request.auth.uid
+          || get(/databases/$(database)/documents/conversations/$(conversationId)).data.sellerId == request.auth.uid
+        );
+
+      allow update, delete: if false;
+    }
+
+    match /customOffers/{offerId} {
+      allow read: if isAdmin()
+        || (signedIn() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid));
+
+      allow create: if signedIn()
+        && featureEnabled('customOffers')
+        && request.resource.data.keys().hasOnly([
+          'sellerId',
+          'buyerId',
+          'serviceId',
+          'serviceName',
+          'title',
+          'description',
+          'price',
+          'deliveryDays',
+          'status',
+          'conversationId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.sellerId == request.auth.uid
+        && request.resource.data.buyerId is string
+        && request.resource.data.buyerId != request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 1
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 5
+        && request.resource.data.description.size() <= 2000
+        && request.resource.data.price is number
+        && request.resource.data.price > 0
+        && request.resource.data.price <= 100000
+        && request.resource.data.deliveryDays is number
+        && request.resource.data.deliveryDays >= 1
+        && request.resource.data.deliveryDays <= 90
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if isAdmin()
+        || (signedIn()
+          && featureEnabled('customOffers')
+          && resource.data.sellerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+          && request.resource.data.status == 'withdrawn'
+          && request.resource.data.updatedAt is timestamp);
+    }
+
+
+    match /platformSettings/{settingId} {
+      allow read: if settingId == 'catalog';
+      allow write: if isAdmin();
+    }
+
+    match /favoriteGroups/{groupId} {
+      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if signedIn()
+        && featureEnabled('favoriteGroups')
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.serviceIds is list
+        && request.resource.data.serviceIds.size() <= 100
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      allow update: if signedIn()
+        && featureEnabled('favoriteGroups')
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.serviceIds is list
+        && request.resource.data.serviceIds.size() <= 100
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt is timestamp;
+      allow delete: if signedIn()
+        && featureEnabled('favoriteGroups')
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /serviceRequests/{requestId} {
+      allow read: if isAdmin()
+        || (signedIn()
+          && featureEnabled('serviceRequests')
+          && (resource.data.buyerId == request.auth.uid || resource.data.status == 'open'));
+      allow create: if signedIn()
+        && featureEnabled('serviceRequests')
+        && request.resource.data.keys().hasOnly([
+          'buyerId',
+          'title',
+          'category',
+          'description',
+          'budgetMax',
+          'deliveryDays',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.buyerId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.category is string
+        && request.resource.data.category.size() >= 1
+        && request.resource.data.category.size() <= 60
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.description.size() <= 2000
+        && request.resource.data.budgetMax is number
+        && request.resource.data.budgetMax >= 1
+        && request.resource.data.deliveryDays is number
+        && request.resource.data.deliveryDays >= 1
+        && request.resource.data.deliveryDays <= 90
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      allow update: if isAdmin()
+        || (signedIn()
+          && featureEnabled('serviceRequests')
+          && resource.data.buyerId == request.auth.uid
+          && request.resource.data.buyerId == resource.data.buyerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','closedBy','updatedAt'])
+          && request.resource.data.status in ['open','closed']
+          && request.resource.data.updatedAt is timestamp);
+      allow delete: if isAdmin() || (signedIn()
+        && featureEnabled('serviceRequests')
+        && resource.data.buyerId == request.auth.uid);
+    }
+
+    match /communityPosts/{postId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && featureEnabled('community')
+        && request.resource.data.keys().hasOnly([
+          'authorId',
+          'title',
+          'body',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.body is string
+        && request.resource.data.body.size() >= 5
+        && request.resource.data.body.size() <= 3000
+        && request.resource.data.status == 'published'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      allow update: if isAdmin()
+        || (signedIn()
+          && featureEnabled('community')
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.authorId == resource.data.authorId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','body','status','updatedAt'])
+          && request.resource.data.updatedAt is timestamp);
+      allow delete: if isAdmin() || (signedIn()
+        && featureEnabled('community')
+        && resource.data.authorId == request.auth.uid);
+    }
+
+    match /verificationRequests/{userId} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow create: if signedIn()
+        && featureEnabled('verification')
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'email',
+          'fullName',
+          'country',
+          'phone',
+          'note',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.auth.uid == userId
+        && request.resource.data.userId == userId
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() >= 3
+        && request.resource.data.fullName.size() <= 120
+        && request.resource.data.country is string
+        && request.resource.data.country.size() >= 2
+        && request.resource.data.country.size() <= 60
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 5
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 1000
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if signedIn()
+        && featureEnabled('verification')
+        && request.auth.uid == userId
+        && resource.data.status == 'rejected'
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fullName','country','phone','note','status','updatedAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.updatedAt is timestamp;
+      allow update: if isAdmin()
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedBy','reviewNote','updatedAt']);
+      allow delete: if false;
+    }
+
+    match /notificationSettings/{userId} {
+      allow read: if signedIn()
+        && request.auth.uid == userId;
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'orders',
+          'messages',
+          'offers',
+          'community',
+          'email',
+          'push',
+          'updatedAt'
+        ])
+        && request.resource.data.orders is bool
+        && request.resource.data.messages is bool
+        && request.resource.data.offers is bool
+        && request.resource.data.community is bool
+        && request.resource.data.email is bool
+        && request.resource.data.push is bool
+        && request.resource.data.updatedAt is timestamp;
+
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'orders',
+          'messages',
+          'offers',
+          'community',
+          'email',
+          'push',
+          'updatedAt'
+        ])
+        && request.resource.data.orders is bool
+        && request.resource.data.messages is bool
+        && request.resource.data.offers is bool
+        && request.resource.data.community is bool
+        && request.resource.data.email is bool
+        && request.resource.data.push is bool
+        && request.resource.data.updatedAt is timestamp;
+
+      allow delete: if signedIn()
+        && request.auth.uid == userId;
+    }
+
+    match /affiliateProfiles/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && featureEnabled('affiliate')
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'code',
+          'clicks',
+          'referrals',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.auth.uid == userId
+        && request.resource.data.userId == userId
+        && request.resource.data.code is string
+        && request.resource.data.code.size() >= 6
+        && request.resource.data.code.size() <= 132
+        && request.resource.data.code == 'ELA-' + userId
+        && request.resource.data.clicks == 0
+        && request.resource.data.referrals == 0
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /affiliateReferrals/{referralId} {
+      allow read: if isAdmin()
+        || (signedIn() && (resource.data.referrerId == request.auth.uid || resource.data.referredId == request.auth.uid));
+      allow create: if signedIn()
+        && featureEnabled('affiliate')
+        && referralId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'referrerId',
+          'referredId',
+          'code',
+          'createdAt'
+        ])
+        && request.resource.data.referredId == request.auth.uid
+        && request.resource.data.referrerId is string
+        && request.resource.data.referrerId != request.auth.uid
+        && request.resource.data.code is string
+        && request.resource.data.createdAt is timestamp
+        && validAffiliateReferrer(request.resource.data.referrerId, request.resource.data.code);
+      allow update, delete: if false;
+    }
+
+    match /supportTickets/{ticketId} {
+      allow create: if signedIn()
+        && featureEnabled('support')
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'userEmail',
+          'category',
+          'subject',
+          'message',
+          'status',
+          'reply',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.userEmail is string
+        && request.resource.data.userEmail.size() <= 320
+        && request.resource.data.category is string
+        && request.resource.data.category.size() >= 1
+        && request.resource.data.category.size() <= 60
+        && request.resource.data.reply is string
+        && request.resource.data.reply.size() == 0
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.category is string
+        && request.resource.data.subject is string
+        && request.resource.data.subject.size() >= 1
+        && request.resource.data.subject.size() <= 120
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 1
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.status == 'open';
+
+      allow read: if signedIn()
+        && (
+          (featureEnabled('support')
+            && resource.data.userId == request.auth.uid)
+          || isSupportAgent() || isAdmin()
+        );
+
+      allow update: if (isSupportAgent() || isAdmin())
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.subject == resource.data.subject
+        && request.resource.data.category == resource.data.category
+        && request.resource.data.message == resource.data.message
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            'status',
+            'reply',
+            'assignedTo',
+            'updatedAt'
+          ])
+        && request.resource.data.status is string
+        && request.resource.data.status in [
+          'open',
+          'answered',
+          'pending',
+          'closed'
+        ]
+        && (!request.resource.data.keys().hasAny(['reply'])
+            || (
+              request.resource.data.reply is string
+              && request.resource.data.reply.size() <= 2000
+            ))
+        && (!request.resource.data.keys().hasAny(['assignedTo'])
+            || request.resource.data.assignedTo is string)
+        && (!request.resource.data.keys().hasAny(['updatedAt'])
+            || request.resource.data.updatedAt is timestamp);
+
+      allow delete: if false;
+    }
+
+    match /supportTickets/{ticketId}/messages/{messageId} {
+      allow read: if signedIn()
+        && (
+          (featureEnabled('support')
+            && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid)
+          || isSupportAgent() || isAdmin()
+        );
+
+      allow create: if signedIn()
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 1
+        && request.resource.data.text.size() <= 3000
+        && (
+          (featureEnabled('support')
+            && get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.userId == request.auth.uid)
+          || isSupportAgent() || isAdmin()
+        );
+
+      allow update, delete: if false;
+    }
+
+    // Barber booking data is written only through the authenticated server API.
+    // This keeps schedule validation, payment confirmation and slot locking server-controlled.
+    match /barberShops/{shopId} {
+      allow read, create, update, delete: if false;
+      match /services/{serviceId} {
+        allow read, create, update, delete: if false;
+      }
+      match /barbers/{barberId} {
+        allow read, create, update, delete: if false;
+      }
+      match /auditLog/{entryId} {
+        allow read, create, update, delete: if false;
+      }
+    }
+
+    match /barberAccounts/{userId} {
+      allow read, create, update, delete: if false;
+    }
+
+    match /barberClaimCodes/{claimCodeHash} {
+      allow read, create, update, delete: if false;
+    }
+
+    match /barberBookings/{bookingId} {
+      allow read, create, update, delete: if false;
+    }
+
+    match /barberBookingLocks/{lockId} {
+      allow read, create, update, delete: if false;
+    }
+
+    match /barberBookingRestrictions/{userId} {
+      allow read, create, update, delete: if false;
+    }
+
+    // AI team task reports and admin decisions are server-only.
+    match /aiTeamTasks/{taskId} {
+      allow read, create, update, delete: if false;
+    }
+
+  }
+}

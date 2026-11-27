@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <meta
+    name="description"
+    content="ElaWamy - سوق الخدمات الرقمية العربية"
+  >
+
+  <meta
+    name="theme-color"
+    content="#15947f"
+  >
+
+  <title>
+    ElaWamy | سوق الخدمات الرقمية
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
+</head>
+
+<body class="home-marketplace">
+
+<header class="site-header">
+
+  <div class="header-inner">
+
+    <a
+      class="logo"
+      href="/"
+      aria-label="ElaWamy"
+    >
+      ElaWamy
+    </a>
+
+    <button
+      id="mobileMenu"
+      class="mobile-menu-btn"
+      type="button"
+      aria-label="فتح القائمة"
+      aria-expanded="false"
+    >
+      ☰
+    </button>
+
+    <nav id="mainNav">
+
+      <a href="/">
+        الرئيسية
+      </a>
+
+      <a href="#services">
+        الخدمات
+      </a>
+
+      <a href="/barbers">
+        حجز الحلاقين
+      </a>
+
+      <a href="/download">
+        تحميل التطبيق
+      </a>
+
+      <a href="/salon" data-auth hidden>إدارة الصالون</a>
+
+      <a href="/barber-schedule" data-auth hidden>صفحة الحلاق</a>
+
+      <a
+        href="/add-service"
+        data-add-service
+      >
+        أضف خدمة
+      </a>
+
+      <a href="/orders" data-auth hidden>
+        الطلبات
+      </a>
+
+      <a href="/buyer-dashboard" data-auth hidden>
+        لوحة المشتري
+      </a>
+
+      <a href="/favorites" data-auth hidden>
+        المفضلة ♥
+      </a>
+
+      <a href="/profile" data-auth hidden>
+        حسابي
+      </a>
+
+      <a href="/seller-dashboard" data-auth data-seller-dashboard hidden>
+        لوحة البائع
+      </a>
+
+      <a href="/wallet" data-auth hidden>
+        💰 أرباحي
+      </a>
+
+      <a href="/support">
+        الدعم الفني
+      </a>
+
+      <a
+        href="/login?redirect=%2F"
+        data-guest
+        class="header-login"
+      >
+        دخول / تسجيل
+      </a>
+
+      <button
+        id="logout"
+        class="link-btn"
+        data-auth
+        hidden
+        type="button"
+      >
+        خروج
+      </button>
+
+    </nav>
+
+  </div>
+
+</header>
+
+<main>
+
+  <!-- HERO -->
+
+  <section class="hero hero-market">
+
+    <div class="hero-content">
+
+      <span class="badge">
+        سوق الخدمات الرقمية العربية
+      </span>
+
+      <h1>
+        اطلب خدمتك أو ابدأ بيع مهارتك
+      </h1>
+
+      <p>
+        اكتشف خدمات رقمية من مجالات مختلفة،
+        قارن بين مقدمي الخدمات،
+        وابدأ طلبك بسهولة.
+      </p>
+
+      <div class="hero-actions">
+
+        <a
+          class="btn"
+          href="#services"
+        >
+          اكتشف الخدمات
+        </a>
+
+        <a
+          class="btn secondary"
+          href="/login?redirect=%2Fadd-service"
+          data-add-service
+        >
+          ابدأ بيع خدماتك
+        </a>
+
+        <a
+          class="btn secondary"
+          href="/download"
+        >
+          حمّل تطبيق العوامي
+        </a>
+
+      </div>
+
+      <p
+        class="user"
+        data-auth
+        hidden
+      >
+        مسجل الدخول:
+        <b data-user></b>
+      </p>
+
+      <p
+        class="user"
+        data-guest
+      >
+        لديك حساب؟
+        <a href="/login">
+          سجل الدخول الآن
+        </a>
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- CATEGORIES -->
+
+  <section class="home-section marketplace-categories">
+
+    <div class="market-section-title">
+
+      <div>
+        <h2>
+          تصفح حسب المجال
+        </h2>
+
+        <p>
+          اختر المجال الذي تبحث عنه
+        </p>
+      </div>
+
+    </div>
+
+    <div class="category-chips">
+
+      <a href="/category?category=%D8%AA%D8%B5%D9%85%D9%8A%D9%85" data-category-filter="تصميم">
+        🎨 تصميم
+      </a>
+
+      <a href="/category?category=%D8%A8%D8%B1%D9%85%D8%AC%D8%A9" data-category-filter="برمجة">
+        💻 برمجة
+      </a>
+
+      <a href="/category?category=%D9%83%D8%AA%D8%A7%D8%A8%D8%A9%20%D9%88%D8%AA%D8%B1%D8%AC%D9%85%D8%A9" data-category-filter="كتابة وترجمة">
+        ✍️ كتابة وترجمة
+      </a>
+
+      <a href="/category?category=%D8%AA%D8%B3%D9%88%D9%8A%D9%82" data-category-filter="تسويق">
+        📣 تسويق
+      </a>
+
+      <a href="/category?category=%D9%81%D9%8A%D8%AF%D9%8A%D9%88%20%D9%88%D8%B5%D9%88%D8%AA" data-category-filter="فيديو وصوت">
+        🎬 فيديو وصوت
+      </a>
+
+      <a href="/category?category=%D8%A3%D8%B9%D9%85%D8%A7%D9%84" data-category-filter="أعمال">
+        💼 أعمال
+      </a>
+
+      <a href="/category?category=%D8%AA%D8%B9%D9%84%D9%8A%D9%85%20%D9%88%D8%AA%D8%AF%D8%B1%D9%8A%D8%A8" data-category-filter="تعليم وتدريب">
+        🎓 تعليم وتدريب
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- SEARCH -->
+
+  <section class="home-section home-search">
+
+    <div class="market-search-box">
+
+      <div class="search-title">
+
+        <h2>
+          ماذا تحتاج؟
+        </h2>
+
+        <p>
+          ابحث عن الخدمة المناسبة لك
+        </p>
+
+      </div>
+
+      <div class="toolbar">
+
+        <div class="search-field">
+
+          <span aria-hidden="true">
+            🔎
+          </span>
+
+          <input
+            id="search"
+            type="search"
+            placeholder="مثال: تصميم شعار، برمجة موقع، ترجمة..."
+            autocomplete="off"
+            aria-label="البحث عن خدمة"
+          >
+
+        </div>
+
+        <select
+          id="category"
+          aria-label="اختيار التصنيف"
+        >
+          <option value="">
+            كل التصنيفات
+          </option>
+        </select>
+
+        <select
+          id="sort"
+          aria-label="ترتيب الخدمات"
+        >
+          <option value="latest">
+            الأحدث
+          </option>
+
+          <option value="rating">
+            الأعلى تقييمًا
+          </option>
+
+          <option value="price-low">
+            السعر من الأقل للأعلى
+          </option>
+
+          <option value="price-high">
+            السعر من الأعلى للأقل
+          </option>
+
+          <option value="delivery-fast">
+            الأسرع تسليمًا
+          </option>
+        </select>
+
+      </div>
+
+      <div class="advanced-filters" aria-label="فلاتر متقدمة">
+
+        <label>
+          <span>أقل سعر</span>
+          <input id="minPrice" type="number" min="0" max="100000" step="1" placeholder="مثال: 50" inputmode="numeric">
+        </label>
+
+        <label>
+          <span>أعلى سعر</span>
+          <input id="maxPrice" type="number" min="0" max="100000" step="1" placeholder="مثال: 500" inputmode="numeric">
+        </label>
+
+        <label>
+          <span>مدة التسليم</span>
+          <select id="maxDelivery" aria-label="أقصى مدة تسليم">
+            <option value="">أي مدة</option>
+            <option value="1">يوم واحد</option>
+            <option value="3">حتى 3 أيام</option>
+            <option value="7">حتى أسبوع</option>
+            <option value="14">حتى أسبوعين</option>
+            <option value="30">حتى 30 يومًا</option>
+          </select>
+        </label>
+
+        <label>
+          <span>التقييم</span>
+          <select id="minRating" aria-label="أقل تقييم">
+            <option value="">أي تقييم</option>
+            <option value="4">4 نجوم فأعلى</option>
+            <option value="4.5">4.5 نجوم فأعلى</option>
+            <option value="5">5 نجوم</option>
+          </select>
+        </label>
+
+        <button type="button" class="clear-filters-btn standalone" id="clearAllFilters">
+          مسح الفلاتر
+        </button>
+
+      </div>
+
+      <div id="activeFilters" class="active-filters" aria-live="polite"></div>
+
+    </div>
+
+  </section>
+
+  <!-- TRUST -->
+
+  <section class="market-trust">
+
+    <div class="market-trust-item">
+
+      <span class="trust-icon">
+        🛍️
+      </span>
+
+      <strong>
+        خدمات متنوعة
+      </strong>
+
+      <span>
+        اكتشف مهارات وخدمات من مجالات مختلفة
+      </span>
+
+    </div>
+
+    <div class="market-trust-item">
+
+      <span class="trust-icon">
+        💰
+      </span>
+
+      <strong>
+        أسعار واضحة
+      </strong>
+
+      <span>
+        اعرف السعر ومدة التسليم قبل الطلب
+      </span>
+
+    </div>
+
+    <div class="market-trust-item">
+
+      <span class="trust-icon">
+        🔒
+      </span>
+
+      <strong>
+        تجربة سهلة
+      </strong>
+
+      <span>
+        ابحث واطلب وتابع طلبك من مكان واحد
+      </span>
+
+    </div>
+
+  </section>
+
+  <!-- SERVICES -->
+
+  <section
+    id="services"
+    class="home-section"
+  >
+
+    <div class="market-section-title">
+
+      <div>
+
+        <h2>
+          الخدمات
+        </h2>
+
+        <p>
+          اختر الخدمة المناسبة لاحتياجك
+        </p>
+
+      </div>
+
+      <strong
+        id="resultCount"
+        class="result-count"
+      >
+        0 خدمة
+      </strong>
+
+    </div>
+
+    <div
+      id="servicesGrid"
+      class="grid"
+    >
+
+      <div class="empty">
+        جاري تحميل الخدمات...
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- HOW IT WORKS -->
+
+  <section class="home-section how-it-works">
+
+    <div class="market-section-title">
+
+      <div>
+
+        <h2>
+          كيف تعمل ElaWamy؟
+        </h2>
+
+        <p>
+          خطوات بسيطة للشراء والبيع
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="steps-grid">
+
+      <div class="step-card">
+
+        <span>
+          1
+        </span>
+
+        <h3>
+          ابحث
+        </h3>
+
+        <p>
+          ابحث عن الخدمة التي تحتاجها
+          واستخدم التصنيفات للوصول إليها بسرعة.
+        </p>
+
+      </div>
+
+      <div class="step-card">
+
+        <span>
+          2
+        </span>
+
+        <h3>
+          اطلب
+        </h3>
+
+        <p>
+          افتح الخدمة وراجع السعر ومدة التسليم
+          ثم ابدأ طلبك.
+        </p>
+
+      </div>
+
+      <div class="step-card">
+
+        <span>
+          3
+        </span>
+
+        <h3>
+          استلم
+        </h3>
+
+        <p>
+          تابع الطلب والتواصل مع مقدم الخدمة
+          حتى استلام العمل.
+        </p>
+
+      </div>
+
+      <div class="step-card">
+
+        <span>
+          4
+        </span>
+
+        <h3>
+          قيّم
+        </h3>
+
+        <p>
+          بعد اكتمال الطلب يمكنك تقييم تجربتك.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SELL CTA -->
+
+  <section class="seller-cta">
+
+    <div>
+
+      <span class="badge">
+        للمستقلين وأصحاب المهارات
+      </span>
+
+      <h2>
+        حوّل مهارتك إلى مصدر دخل
+      </h2>
+
+      <p>
+        أضف خدمتك، اعرض مهاراتك،
+        واستقبل طلبات العملاء من خلال ElaWamy.
+      </p>
+
+    </div>
+
+    <a
+      class="btn"
+      href="/login?redirect=%2Fadd-service"
+    >
+      أضف خدمتك الآن
+    </a>
+
+  </section>
+
+</main>
+
+<footer>
+
+  <div>
+
+    <strong>
+      ElaWamy
+    </strong>
+
+    <p>
+      سوق الخدمات الرقمية العربية
+    </p>
+
+  </div>
+
+  <div class="footer-links">
+
+    <a href="/">
+      الرئيسية
+    </a>
+
+    <a href="#services">
+      الخدمات
+    </a>
+
+    <a href="/barbers">
+      حجز الحلاقين
+    </a>
+
+    <a href="/download">
+      تحميل التطبيق
+    </a>
+
+    <a href="/add-service">
+      أضف خدمة
+    </a>
+    <a href="/seller-dashboard" data-seller-dashboard hidden>لوحة البائع</a>
+
+    <a href="/orders">
+      الطلبات
+    </a>
+
+    <a href="/profile">
+      حسابي
+    </a>
+
+    <a href="/support">
+      الدعم الفني
+    </a>
+
+  </div>
+
+</footer>
+
+<script
+  type="module"
+  src="/js/app.js"
+></script>
+
+<script type="module" src="/js/notifications.js"></script>
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script><script type="module" src="/js/featured-strip.js"></script></body>
+
+</html>

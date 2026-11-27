@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تعديل الخدمة | ElaWamy</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<header>
+  <a class="logo" href="/">ElaWamy</a>
+
+  <nav>
+    <a href="/">الخدمات</a>
+    <a href="/orders">الطلبات</a>
+    <a href="/profile">حسابي</a>
+    <a href="/support">الدعم الفني</a>
+  </nav>
+</header>
+
+<main>
+  <div class="box wide">
+
+    <h1>تعديل الخدمة</h1>
+
+    <p class="muted">
+      عدّل بيانات خدمتك ثم احفظ التغييرات.
+    </p>
+
+    <input
+      id="name"
+      maxlength="80"
+      placeholder="اسم الخدمة"
+    >
+
+    <textarea
+      id="description"
+      maxlength="1200"
+      placeholder="وصف الخدمة بالتفصيل"
+    ></textarea>
+
+    <div class="form-grid">
+
+      <select id="category">
+        <option value="">اختر التصنيف</option>
+        <option>تصميم</option>
+        <option>برمجة</option>
+        <option>كتابة وترجمة</option>
+        <option>تسويق</option>
+        <option>فيديو وصوت</option>
+        <option>أعمال</option>
+        <option>تعليم وتدريب</option>
+      </select>
+
+      <input
+        id="price"
+        type="number"
+        min="1"
+        max="100000"
+        step="1"
+        placeholder="السعر بالجنيه"
+      >
+
+    </div>
+
+    <input
+      id="deliveryDays"
+      type="number"
+      min="1"
+      max="90"
+      placeholder="مدة التسليم بالأيام"
+    >
+
+    <input
+      id="imageUrl"
+      type="url"
+      placeholder="رابط صورة الخدمة (اختياري)"
+    >
+
+    <button id="save" class="btn">
+      حفظ التغييرات
+    </button>
+
+    <p id="message"></p>
+
+  </div>
+</main>
+
+<script type="module" src="/js/edit-service.js"></script>
+<script type="module" src="/js/notifications.js"></script>
+
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script><script type="module">import { loadCategories } from "/js/category-source.js"; loadCategories("category");</script></body>
+</html>

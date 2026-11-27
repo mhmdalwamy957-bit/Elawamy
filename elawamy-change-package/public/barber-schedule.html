@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="صفحة مستقلة لكل حلاق لإدارة ساعات العمل وأيام الإجازة ومراجعة تقييمه العام في ElaWamy.">
+  <meta name="theme-color" content="#15947f">
+  <title>مواعيدي كحلاق | ElaWamy</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/barbers.css">
+</head>
+<body class="barbers-page">
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/" aria-label="ElaWamy">ElaWamy</a>
+    <nav class="barber-nav" aria-label="القائمة الرئيسية">
+      <a href="/barbers">الصالونات</a>
+      <a href="/barber-booking">حجز موعد</a>
+      <a href="/barber-schedule" aria-current="page">مواعيدي كحلاق</a>
+      <a href="/salon" data-auth data-owner-nav hidden>حساب الصالون</a>
+      <a href="/login?redirect=%2Fbarber-schedule" data-guest>دخول / تسجيل</a>
+      <span class="barber-user" data-auth hidden id="barberUserLabel"></span>
+    </nav>
+  </div>
+</header>
+<main class="barbers-main">
+  <section class="barber-hero">
+    <div>
+      <span class="barber-eyebrow">مساحة الحلاق الشخصية</span>
+      <h1>إنت تتحكم في مواعيدك</h1>
+      <p>اربط حسابك بملف الحلاق عن طريق كود الربط الذي يعطيه لك صاحب الصالون، وبعدها حدد ساعات شغلك وأيام إجازتك بنفسك.</p>
+      <a class="barber-hero-link" href="/barber-booking">عرض مواعيد الحجز ←</a>
+    </div>
+    <div class="barber-hero-icon" aria-hidden="true">✂</div>
+  </section>
+  <div id="scheduleNotice" class="barber-notice" role="status" aria-live="polite" hidden></div>
+  <section id="claimPanel" class="barber-section barber-panel" hidden>
+    <div class="barber-section-heading"><div><span class="barber-eyebrow">ربط ملف الحلاق</span><h2>اربط حسابك بالصالون</h2></div></div>
+    <p class="barber-muted">اطلب من صاحب الصالون كود الربط الخاص باسمك. الكود صالح لمدة 30 يومًا ويُستخدم مرة واحدة، ولا تشاركه مع أي شخص غيرك.</p>
+    <form id="claimForm" class="barber-form">
+      <label>كود الربط<input name="code" required maxlength="24" minlength="24" pattern="[A-Fa-f0-9]{24}" autocomplete="off" placeholder="الصق كود الربط هنا"></label>
+      <button id="claimSubmit" type="submit" class="barber-button barber-button-primary">ربط حسابي بالحلاق</button>
+    </form>
+  </section>
+  <section id="schedulePanel" class="barber-section barber-panel" hidden>
+    <div class="barber-section-heading"><div><span class="barber-eyebrow">ملفك الشخصي</span><h2 id="profileTitle">مواعيدي</h2></div><button id="reloadSchedule" class="barber-button barber-button-light" type="button">تحديث</button></div>
+    <div id="barberProfileSummary" class="barber-selected-shop"></div>
+    <form id="barberPhotoForm" class="barber-form barber-photo-form">
+      <h3>صورتك كحلاق</h3>
+      <label>اختار صورة شخصية واضحة (JPG أو PNG أو WebP حتى 8 ميجابايت)<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+      <button id="saveBarberPhoto" type="submit" class="barber-button barber-button-primary">حفظ صورة الحلاق</button>
+      <p class="barber-muted barber-small">الصورة هتظهر في ملف الحلاق للعميل قبل ما يختار ميعاد الحجز.</p>
+    </form>
+    <form id="scheduleForm" class="barber-form">
+      <div class="barber-form-grid">
+        <label>تبدأ الشغل الساعة<input id="openTime" name="openTime" type="time" required></label>
+        <label>تنهي الشغل الساعة<input id="closeTime" name="closeTime" type="time" required></label>
+      </div>
+      <fieldset class="barber-days"><legend>أيام الإجازة الخاصة بك</legend>
+        <label><input type="checkbox" name="closedDays" value="0"> الأحد</label>
+        <label><input type="checkbox" name="closedDays" value="1"> الاثنين</label>
+        <label><input type="checkbox" name="closedDays" value="2"> الثلاثاء</label>
+        <label><input type="checkbox" name="closedDays" value="3"> الأربعاء</label>
+        <label><input type="checkbox" name="closedDays" value="4"> الخميس</label>
+        <label><input type="checkbox" name="closedDays" value="5"> الجمعة</label>
+        <label><input type="checkbox" name="closedDays" value="6"> السبت</label>
+      </fieldset>
+      <label>إجازات إضافية بالتاريخ (اختياري)
+        <textarea name="closedDatesText" rows="3" maxlength="1319" placeholder="2026-12-01&#10;2026-12-15"></textarea>
+      </label>
+      <p class="barber-help">اكتب كل إجازة في سطر بصيغة YYYY-MM-DD. في الأيام دي مش هتظهر مواعيد متاحة للحجز. مسموح حتى 120 تاريخًا.</p>
+      <p class="barber-help">مواعيدك المستقلة هي التي ستظهر للعميل عند اختيار اسمك، بشرط أن تكون داخل ساعات الصالون. تعديل المواعيد لا يلغي الحجوزات المؤكدة السابقة.</p>
+      <button id="saveSchedule" type="submit" class="barber-button barber-button-primary">حفظ مواعيدي</button>
+    </form>
+    <section class="barber-rating-card">
+      <h3>تقييمك العام</h3>
+      <p id="barberRatingSummary">جاري تحميل التقييم...</p>
+      <p class="barber-muted">التقييم هو متوسط تقييمات العملاء بعد مواعيدهم، وعدد التقييمات ظاهر للعملاء عند الحجز.</p>
+    </section>
+    <section class="barber-section">
+      <div class="barber-section-heading"><div><span class="barber-eyebrow">تشغيل اليوم</span><h2>متابعة حجوزات اليوم</h2></div><button id="reloadTodayAppointments" type="button" class="barber-button barber-button-light">تحديث</button></div>
+      <p class="barber-muted">بعد انتهاء الموعد، سجّل هل تم تنفيذ الخدمة أم لم يحضر العميل. التغيير يظهر في سجل الصالون.</p>
+      <div id="barberTodayAppointments" class="barber-bookings-list"><div class="barber-empty">جاري تحميل مواعيد اليوم...</div></div>
+    </section>
+    <section class="barber-section">
+      <div class="barber-section-heading"><div><span class="barber-eyebrow">جدولك القادم</span><h2>الحجوزات القادمة</h2></div></div>
+      <div id="barberAppointments" class="barber-bookings-list"><div class="barber-empty">جاري تحميل الحجوزات...</div></div>
+    </section>
+  </section>
+  <section id="signInPrompt" class="barber-signin" hidden>
+    <div><h2>سجّل الدخول لإدارة مواعيدك</h2><p>لازم تستخدم حسابك الشخصي، وتربطه بكود خاص بملف الحلاق.</p></div>
+    <a class="barber-button barber-button-primary" href="/login?redirect=%2Fbarber-schedule">دخول / تسجيل</a>
+  </section>
+</main>
+<footer class="barber-footer"><a href="/">ElaWamy</a><span>إدارة مواعيد الحلاقين</span><a href="/support">الدعم الفني</a></footer>
+<script type="module" src="/js/barber-schedule.js"></script>
+</body>
+</html>

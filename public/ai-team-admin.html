@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b46">
+  <meta name="description" content="لوحة إدارة فريق الذكاء الاصطناعي في العوامي">
+  <title>فريق العوامي AI | لوحة الأدمن</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root{color-scheme:light}body{background:#f3f6fa;color:#142b40}.team-shell{max-width:1050px;margin:28px auto;padding:0 16px 48px}.team-head,.team-panel,.team-card{background:#fff;border:1px solid #dce5ee;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #102b4609}.team-head h1{margin:0 0 8px}.team-muted{color:#637487;line-height:1.7}.team-roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px}.team-role{background:#f4f7fb;border-radius:10px;padding:10px;font-size:14px}.team-form{display:grid;gap:12px}.team-form textarea{width:100%;min-height:125px;padding:12px;border:1px solid #cbd6e2;border-radius:10px;font:inherit;resize:vertical}.team-button{border:0;border-radius:10px;padding:11px 17px;font:inherit;font-weight:700;cursor:pointer;background:#153a5b;color:#fff}.team-button:disabled{opacity:.55;cursor:wait}.team-button.secondary{background:#e8eef4;color:#203c55}.team-button.reject{background:#8b2934}.team-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.team-status{padding:10px 12px;border-radius:10px;background:#eef3f7;color:#31475a;white-space:pre-wrap}.team-report{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;background:#f8fafc;border:1px solid #e7edf3;border-radius:10px;padding:14px;margin-top:10px;font-size:14px}.team-card h3{margin:0 0 8px}.team-meta{font-size:13px;color:#718195}.team-hidden{display:none!important}.team-chip{display:inline-block;border-radius:20px;background:#eaf0f6;padding:4px 9px;font-size:12px;margin-inline-start:6px}.team-chip.pending{background:#fff0ce;color:#765415}.team-chip.approved{background:#dff4e7;color:#1d6841}.team-chip.rejected{background:#f8e3e5;color:#85333c}.team-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:600px){.team-shell{margin-top:14px;padding:0 10px 30px}.team-head,.team-panel,.team-card{padding:14px}}
+  </style>
+</head>
+<body>
+  <header class="site-header"><div class="header-inner"><a class="logo" href="/">ElaWamy</a><nav><a href="/">الرئيسية</a><a href="/ai">مساعد العوامي</a></nav></div></header>
+  <main class="team-shell">
+    <section class="team-head">
+      <p class="team-muted">لوحة الأدمن — فريق العوامي الذكي</p>
+      <h1>فريق تطوير الموقع والتطبيق</h1>
+      <p class="team-muted">الفريق يقرأ فهرس المستودع ويحمّل الملفات النصية الأكثر ارتباطًا بكل مهمة، ثم يراجعها عبر 8 مجموعات تضم 40 دورًا تخصصيًا. موافقتك تنشئ فرعًا مستقلًا وPull Request مسودة فقط؛ لا يوجد دمج أو نشر تلقائي.</p>
+      <div id="teamAuthStatus" class="team-status" role="status">جارٍ التحقق من صلاحية الأدمن…</div>
+      <div id="teamGithubStatus" class="team-status" role="status">جارٍ التحقق من اتصال GitHub…</div>
+      <div class="team-roles" aria-label="المجموعات الأربعون للفريق">
+        <div class="team-role"><strong>المعمارية وتحليل المنتج</strong><br><span>مهندس الحلول • محلل المنتج • محلل العمليات • مصمم تدفق البيانات • باحث تجربة المستخدم</span></div>
+        <div class="team-role"><strong>تطوير واجهات الموقع</strong><br><span>مهندس الواجهات • HTML وCSS • JavaScript • الوصول • أداء الويب</span></div>
+        <div class="team-role"><strong>تطوير تطبيق الهاتف</strong><br><span>Expo • Android • iOS • PWA • تجربة الهاتف</span></div>
+        <div class="team-role"><strong>الخادم وواجهات API</strong><br><span>Node.js • عقود API • التكاملات • المهام الخلفية • موثوقية الخادم</span></div>
+        <div class="team-role"><strong>Firebase والبيانات</strong><br><span>المصادقة • Firestore • قواعد البيانات • الفهارس • التخزين</span></div>
+        <div class="team-role"><strong>الأمان والخصوصية</strong><br><span>تحليل التهديدات • الأسرار • التحقق • الخصوصية • منع الإساءة</span></div>
+        <div class="team-role"><strong>الجودة والاختبارات</strong><br><span>استراتيجية الاختبار • الوحدات • التكامل • E2E • الانحدار</span></div>
+        <div class="team-role"><strong>التشغيل والإصدار</strong><br><span>Vercel • Firebase Hosting • CI/CD • المراقبة • التراجع</span></div>
+      </div>
+    </section>
+    <section class="team-panel">
+      <h2>مهمة تطوير جديدة</h2>
+      <form id="teamTaskForm" class="team-form">
+        <label for="teamTaskInput">اشرح المطلوب من الفريق</label>
+        <textarea id="teamTaskInput" maxlength="5000" placeholder="مثال: راجع طريقة تسجيل الدخول الموحد بين الموقع وتطبيق Android واقترح خطة آمنة…" required disabled></textarea>
+        <div class="team-row"><button id="teamRunButton" class="team-button" type="submit" disabled>شغّل فريق التطوير</button><button id="teamRefreshButton" class="team-button secondary" type="button" disabled>تحديث المهام</button></div>
+      </form>
+      <p class="team-muted">لا تضع كلمات مرور أو مفاتيح API أو بيانات عملاء في وصف المهمة. يظل Gemini هو المنسق، وقد يستخدم OpenRouter المجاني للمراجعة الثانية عند توفره. إنشاء Pull Request لا يعني تشغيل الاختبارات أو الدمج أو النشر؛ يلزم فحص الـ PR قبل أي اعتماد نهائي.</p>
+      <div id="teamNewResult" class="team-hidden"></div>
+    </section>
+    <section class="team-panel">
+      <h2>تقارير الفريق وقرارات الأدمن</h2>
+      <div id="teamTasksList" class="team-muted">سيتم عرض التقارير هنا بعد التحقق من صلاحية حسابك.</div>
+    </section>
+  </main>
+  <script type="module" src="/js/ai-team-admin.js"></script>
+</body>
+</html>

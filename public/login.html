@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>تسجيل الدخول وإنشاء حساب | ElaWamy</title>
+
+  <link rel="stylesheet" href="/css/style.css">
+
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .auth-box {
+      width: min(100%, 430px);
+      box-sizing: border-box;
+    }
+
+    .auth-logo {
+      text-align: center;
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .auth-subtitle {
+      text-align: center;
+      margin: 0 0 26px;
+      opacity: .75;
+    }
+
+    .auth-field {
+      margin-bottom: 14px;
+    }
+
+    .auth-field label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+    }
+
+    .auth-field input,
+    .auth-field select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 14px;
+      border: 1px solid #d9e4e2;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #fff;
+    }
+
+    .auth-field select {
+      appearance: auto;
+    }
+
+    .auth-hint {
+      display: block;
+      margin-top: 6px;
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .registration-fields[hidden] {
+      display: none !important;
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap input {
+      padding-left: 52px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 7px;
+    }
+
+    .auth-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .auth-forgot {
+      display: block;
+      text-align: center;
+      margin: 15px 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .auth-message {
+      min-height: 24px;
+      margin-top: 16px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .auth-back {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+
+<body class="center auth-page">
+
+  <main class="box auth-box">
+
+    <div class="auth-logo">ElaWamy</div>
+
+    <p id="authSubtitle" class="auth-subtitle">
+      سجّل دخولك للوصول إلى حسابك وطلباتك وخدماتك
+    </p>
+
+    <div class="auth-field">
+      <label for="email">البريد الإلكتروني</label>
+      <input
+        id="email"
+        type="email"
+        autocomplete="email"
+        inputmode="email"
+        placeholder="example@email.com"
+      >
+    </div>
+
+    <div class="auth-field">
+      <label for="password">كلمة المرور</label>
+
+      <div class="password-wrap">
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="اكتب كلمة المرور"
+        >
+
+        <button
+          id="togglePassword"
+          class="toggle-password"
+          type="button"
+          aria-label="إظهار كلمة المرور"
+          title="إظهار كلمة المرور"
+        >
+          👁️
+        </button>
+      </div>
+    </div>
+
+    <section id="registrationFields" class="registration-fields" hidden aria-label="بيانات إنشاء الحساب">
+      <div class="auth-field">
+        <label for="displayName">الاسم الظاهر على الموقع</label>
+        <input
+          id="displayName"
+          type="text"
+          maxlength="60"
+          autocomplete="nickname"
+          placeholder="الاسم الذي يظهر للمستخدمين"
+        >
+      </div>
+
+      <div class="auth-field">
+        <label for="fullName">الاسم الرباعي الكامل</label>
+        <input
+          id="fullName"
+          type="text"
+          maxlength="160"
+          autocomplete="name"
+          placeholder="الاسم الأول واسم الأب والجد والعائلة"
+        >
+        <small class="auth-hint">اكتب أربعة أجزاء من اسمك على الأقل، واكتب الأسماء المركبة كاملة.</small>
+      </div>
+
+      <div class="auth-field">
+        <label for="birthDate">تاريخ الميلاد (بالتقويم الميلادي)</label>
+        <input
+          id="birthDate"
+          type="date"
+          lang="en"
+          autocomplete="bday"
+        >
+        <small class="auth-hint">اختر تاريخ الميلاد الميلادي من التقويم؛ لا يمكن اختيار تاريخ في المستقبل.</small>
+      </div>
+
+      <div class="auth-field">
+        <label for="paymentMethod">وسيلة الدفع أو استلام الأرباح المفضلة</label>
+        <select id="paymentMethod">
+          <option value="">اختر وسيلة الدفع</option>
+          <option value="vodafone_cash">Vodafone Cash</option>
+          <option value="instapay">InstaPay</option>
+          <option value="ewallet">محفظة إلكترونية أخرى</option>
+          <option value="bank">حساب بنكي</option>
+        </select>
+        <small class="auth-hint">هذا اختيار مبدئي فقط؛ لن نطلب رقم المحفظة أو الحساب البنكي في التسجيل.</small>
+      </div>
+    </section>
+
+    <button
+      id="forgotPassword"
+      class="auth-forgot"
+      type="button"
+    >
+      نسيت كلمة المرور؟
+    </button>
+
+    <div class="auth-actions">
+
+      <button
+        id="loginBtn"
+        class="btn"
+        type="button"
+      >
+        تسجيل الدخول
+      </button>
+
+      <button
+        id="registerBtn"
+        class="btn secondary"
+        type="button"
+      >
+        إنشاء حساب جديد
+      </button>
+
+      <button
+        id="googleSignInBtn"
+        class="btn"
+        type="button"
+        aria-label="تسجيل الدخول باستخدام Google"
+      >
+        <span aria-hidden="true">G</span> المتابعة باستخدام Google
+      </button>
+
+    </div>
+
+    <p
+      id="message"
+      class="auth-message"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <a class="auth-back" href="/">
+      العودة إلى الخدمات
+    </a>
+
+  </main>
+
+  <script type="module" src="/js/login.js"></script>
+
+<script type="module" src="/js/site-nav.js"></script><script type="module" src="/js/affiliate-tracker.js"></script></body>
+</html>
