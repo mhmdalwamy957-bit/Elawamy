@@ -1,0 +1,67 @@
+name: ElaWamy Production Monitor
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: elawamy-production-monitor
+  cancel-in-progress: true
+
+jobs:
+  check-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check Firebase Hosting and Vercel health
+        id: probe
+        shell: bash
+        run: |
+          FRONTEND_CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 https://elawamy-8d7e9.web.app/ || true)"
+          BACKEND_CODE="$(curl -sS -o "$RUNNER_TEMP/backend-health.json" -w '%{http_code}' --max-time 20 https://elawamy-file-server.vercel.app/health || true)"
+          BACKEND_BODY="$(tr '\r\n' '  ' < "$RUNNER_TEMP/backend-health.json" 2>/dev/null | cut -c1-300 || true)"
+          HEALTHY=true
+          if [ "$FRONTEND_CODE" != "200" ] || [ "$BACKEND_CODE" != "200" ] || ! printf '%s' "$BACKEND_BODY" | grep -q '"ok":true'; then HEALTHY=false; fi
+          {
+            echo "healthy=$HEALTHY"
+            echo 'details<<EOF'
+            echo "Frontend HTTP: $FRONTEND_CODE"
+            echo "Backend HTTP: $BACKEND_CODE"
+            echo "Backend response: ${BACKEND_BODY:0:300}"
+            echo "Checked at UTC: $(date -u '+%Y-%m-%d %H:%M:%S')"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+      - name: Notify repository owner about outage or recovery
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          MONITOR_HEALTHY: ${{ steps.probe.outputs.healthy }}
+          MONITOR_DETAILS: ${{ steps.probe.outputs.details }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = '[ElaWamy Monitor] Production availability';
+            const healthy = process.env.MONITOR_HEALTHY === 'true';
+            const details = process.env.MONITOR_DETAILS || 'The health probe did not return details.';
+            const { data: issues } = await github.rest.issues.listForRepo({ owner, repo, state: 'open', per_page: 100 });
+            const incident = issues.find(item => !item.pull_request && item.title === title);
+            if (!healthy && !incident) {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                assignees: [owner],
+                body: '@mhmdalwamy957-bit\n\nAutomated monitoring detected a production availability failure. No code or production data was changed.\n\n' + details
+              });
+            } else if (!healthy && incident) {
+              await github.rest.issues.update({ owner, repo, issue_number: incident.number, body: '@mhmdalwamy957-bit\n\nProduction is still failing. Latest probe:\n\n' + details });
+            } else if (healthy && incident) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: incident.number, body: 'Production health checks recovered.\n\n' + details });
+              await github.rest.issues.update({ owner, repo, issue_number: incident.number, state: 'closed' });
+            }

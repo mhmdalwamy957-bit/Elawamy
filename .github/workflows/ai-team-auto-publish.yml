@@ -1,0 +1,152 @@
+name: ElaWamy AI Team Secure Publish
+
+on:
+  repository_dispatch:
+    types: [elawamy-ai-team-publish]
+
+# Default to read-only. Each job receives only the permissions it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: elawamy-secure-publish
+  cancel-in-progress: false
+
+jobs:
+  verify-and-merge:
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+      issues: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    outputs:
+      merged: ${{ steps.publish.outputs.merged }}
+      merge_sha: ${{ steps.publish.outputs.merge_sha }}
+    steps:
+      - name: Verify signed admin approval, exact commit and CI, then merge
+        id: publish
+        uses: actions/github-script@v7
+        env:
+          AI_TEAM_PUBLISH_HMAC_SECRET: ${{ secrets.AI_TEAM_PUBLISH_HMAC_SECRET }}
+          VERCEL_TOKEN_PRESENT: ${{ secrets.VERCEL_TOKEN != '' }}
+          FIREBASE_SERVICE_ACCOUNT_PRESENT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        with:
+          script: |
+            const crypto = require('node:crypto');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const p = context.payload.client_payload || {};
+            const fail = message => { throw new Error('Secure publish stopped: ' + message); };
+            if (context.eventName !== 'repository_dispatch' || context.payload.action !== 'elawamy-ai-team-publish') fail('unexpected event');
+            if (process.env.VERCEL_TOKEN_PRESENT !== 'true' || process.env.FIREBASE_SERVICE_ACCOUNT_PRESENT !== 'true') fail('deployment secrets are missing; nothing was merged');
+            const secret = String(process.env.AI_TEAM_PUBLISH_HMAC_SECRET || '');
+            if (Buffer.byteLength(secret, 'utf8') < 32) fail('AI_TEAM_PUBLISH_HMAC_SECRET is missing or too short in GitHub Actions');
+            const taskId = String(p.task_id || '');
+            const prNumber = Number(p.pr_number);
+            const headSha = String(p.head_sha || '');
+            const branch = String(p.branch || '');
+            const approvedByUid = String(p.approved_by_uid || '');
+            const approvedAt = Number(p.approved_at);
+            const expiresAt = Number(p.expires_at);
+            const nonce = String(p.nonce || '');
+            const signature = String(p.signature || '');
+            if (!/^[A-Za-z0-9_-]{10,150}$/.test(taskId)) fail('invalid task id');
+            if (!Number.isSafeInteger(prNumber) || prNumber < 1) fail('invalid pull request number');
+            if (!/^[a-f0-9]{40}$/i.test(headSha)) fail('invalid reviewed commit SHA');
+            if (!new RegExp('^ai-team/task-[A-Za-z0-9._-]{1,120}$').test(branch)) fail('invalid AI Team branch');
+            if (!/^[A-Za-z0-9:._-]{1,128}$/.test(approvedByUid)) fail('missing authenticated admin identity');
+            if (!Number.isSafeInteger(approvedAt) || !Number.isSafeInteger(expiresAt) || expiresAt <= approvedAt || expiresAt - approvedAt > 600) fail('invalid approval time window');
+            if (Date.now() / 1000 > expiresAt || Date.now() / 1000 < approvedAt - 60) fail('approval expired or timestamp is invalid');
+            if (!/^[a-f0-9-]{36}$/i.test(nonce) || !/^[a-f0-9]{64}$/i.test(signature)) fail('invalid signature envelope');
+            const canonical = ['1', (owner + '/' + repo).toLowerCase(), String(prNumber), headSha, branch, 'main', taskId, approvedByUid, String(approvedAt), String(expiresAt), nonce].join(String.fromCharCode(10));
+            const expected = crypto.createHmac('sha256', secret).update(canonical).digest();
+            const supplied = Buffer.from(signature, 'hex');
+            if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) fail('admin approval signature does not match');
+
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            if (pr.state !== 'open' || pr.merged || pr.draft) fail('pull request is not open and ready');
+            if (String(pr.user?.login || '').toLowerCase() !== owner.toLowerCase()) fail('pull request author is not the repository owner automation');
+            if (String(pr.base?.ref || '') !== 'main') fail('pull request target is not main');
+            if (String(pr.head?.ref || '') !== branch || String(pr.head?.sha || '') !== headSha) fail('pull request changed after admin review');
+            if (String(pr.head?.repo?.full_name || '').toLowerCase() !== (owner + '/' + repo).toLowerCase()) fail('fork pull requests are not eligible');
+
+            // Wait for the required project CI check for this exact SHA; never execute or check out PR code here.
+            const deadline = Date.now() + 8 * 60 * 1000;
+            let ciPassed = false;
+            while (Date.now() < deadline) {
+              const { data: checks } = await github.rest.checks.listForRef({ owner, repo, ref: headSha, per_page: 100 });
+              const checkRuns = checks.check_runs || [];
+              const required = checkRuns.find(check => check.name === 'Project and AI Team Checks');
+              const failed = checkRuns.find(check => check.status === 'completed' && check.conclusion && !['success', 'neutral', 'skipped'].includes(String(check.conclusion)));
+              if (failed) fail('a required or additional check failed: ' + String(failed.name || 'unknown check'));
+              if (required?.status === 'completed' && required.conclusion === 'success' && checkRuns.every(check => check.status === 'completed' && ['success', 'neutral', 'skipped'].includes(String(check.conclusion || '')))) {
+                ciPassed = true;
+                break;
+              }
+              await new Promise(resolve => setTimeout(resolve, 15000));
+            }
+            if (!ciPassed) fail('the required CI checks did not finish successfully within 8 minutes');
+
+            // SHA pin prevents a time-of-check/time-of-use merge race.
+            const { data: merged } = await github.rest.pulls.merge({ owner, repo, pull_number: prNumber, sha: headSha, merge_method: 'squash', commit_title: 'Publish approved ElaWamy AI Team update' });
+            if (!merged.merged || !merged.sha) fail('GitHub did not confirm the merge');
+            await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: 'تم الدمج بعد التحقق من موافقة الأدمن الموقّعة ونجاح فحوص CI لنفس بصمة الكود. بدأ سير النشر الإنتاجي.' });
+            core.setOutput('merged', 'true');
+            core.setOutput('merge_sha', merged.sha);
+
+  deploy-production:
+    needs: verify-and-merge
+    if: needs.verify-and-merge.outputs.merged == 'true'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: elawamy-production-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Checkout the exact merged commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-and-merge.outputs.merge_sha }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy backend to Vercel
+        working-directory: server
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          test -n "$VERCEL_TOKEN" || { echo 'Missing VERCEL_TOKEN'; exit 1; }
+          npx --yes vercel@latest link --yes --project elawamy-file-server --scope elawamymohammed2-9828 --token "$VERCEL_TOKEN"
+          npx --yes vercel@latest --prod --yes --token "$VERCEL_TOKEN"
+      - name: Deploy Firebase Hosting
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          set -eu
+          test -n "$FIREBASE_SERVICE_ACCOUNT" || { echo 'Missing FIREBASE_SERVICE_ACCOUNT'; exit 1; }
+          trap 'rm -f "$GOOGLE_APPLICATION_CREDENTIALS"' EXIT
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          npx --yes firebase-tools@latest deploy --only hosting --project elawamy-8d7e9
+      - name: Verify production health after deployment
+        shell: bash
+        run: |
+          set -u
+          for attempt in $(seq 1 10); do
+            FRONTEND_CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 https://elawamy-8d7e9.web.app/ || true)"
+            BACKEND_CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 https://elawamy-file-server.vercel.app/health || true)"
+            if [ "$FRONTEND_CODE" = "200" ] && [ "$BACKEND_CODE" = "200" ]; then
+              echo 'Production health checks passed.'
+              exit 0
+            fi
+            echo "Health check attempt $attempt/10 failed: frontend=$FRONTEND_CODE backend=$BACKEND_CODE"
+            sleep 15
+          done
+          echo 'Deployment commands completed, but the public health checks did not recover.'
+          exit 1

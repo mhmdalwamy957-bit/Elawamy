@@ -3,9 +3,12 @@ name: ElaWamy AI Team CI
 on:
   push:
     branches:
+      - main
       - ai-team-bootstrap-20261125
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
     branches:
+      - main
       - ai-team-bootstrap-20261125
 
 permissions:
